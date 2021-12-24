@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.funicorn.basic.common.datasource.config.MybatisPlusConfig,\
+  com.funicorn.basic.common.datasource.config.DsAutoConfiguration

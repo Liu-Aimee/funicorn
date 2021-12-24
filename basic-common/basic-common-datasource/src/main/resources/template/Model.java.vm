@@ -1,0 +1,82 @@
+package ${package.Entity};
+
+#foreach($pkg in ${table.importPackages})
+import ${pkg};
+#end
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.funicorn.basic.common.datasource.model.BaseModel;
+#if(${swagger2})
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+#end
+#if(${entityLombokModel})
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+  #if(${chainModel})
+  #end
+#end
+
+/**
+ * <p>
+ * $!{table.comment}
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+#if(${entityLombokModel})
+@Data
+#if(${superEntityClass})
+@EqualsAndHashCode(callSuper = true)
+#else
+@EqualsAndHashCode(callSuper = false)
+#end
+#end
+@TableName("${table.name}")
+#if(${swagger2})
+@ApiModel(value="${entity}对象", description="$!{table.comment}")
+#end
+public class ${entity} extends BaseModel implements Serializable{
+
+  private static final long serialVersionUID=1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.fields})
+
+  #if("$!field.comment" != "")
+    #if(${swagger2})
+  @ApiModelProperty(value = "${field.comment}")
+    #else
+  /**
+   * ${field.comment}
+   */
+    #end
+  #end
+  #if(${field.keyFlag})
+  ## 主键
+  #if(${field.keyIdentityFlag})
+@TableId(value = "${field.annotationColumnName}", type = IdType.AUTO)
+  private ${field.propertyType} ${field.propertyName};
+  #elseif(!$null.isNull(${idType}) && "$!idType" != "")
+@TableId(value = "${field.annotationColumnName}", type = IdType.${idType})
+  private ${field.propertyType} ${field.propertyName};
+  #elseif(${field.convert})
+@TableId("${field.annotationColumnName}")
+  private ${field.propertyType} ${field.propertyName};
+  #end
+    ## 普通字段
+  #elseif(${field.fill})
+    ## -----   存在字段填充设置   -----
+    #if(${field.convert})
+  @TableField(value = "${field.annotationColumnName}", fill = FieldFill.${field.fill})
+  private ${field.propertyType} ${field.propertyName};
+    #else
+  @TableField(fill = FieldFill.${field.fill})
+  private ${field.propertyType} ${field.propertyName};
+    #end
+  #else
+  @TableField(value = "${field.annotationColumnName}")
+  private ${field.propertyType} ${field.propertyName};
+  #end
+#end
+}

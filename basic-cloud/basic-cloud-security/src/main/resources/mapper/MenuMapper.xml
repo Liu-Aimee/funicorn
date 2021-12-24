@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.basic.cloud.security.mapper.MenuMapper">
+    <resultMap id="menuResultMap" type="com.funicorn.basic.cloud.security.entity.Menu"/>
+
+    <select id="selectMenuByUser" parameterType="java.lang.String" resultMap="menuResultMap">
+        SELECT m.*
+          FROM menu m
+                 INNER JOIN role_menu rm ON m.id = rm.menu_id
+         WHERE rm.tenant_id = #{tenantId}
+           AND rm.role_id = #{roleId}
+           AND m.is_delete = '0'
+    </select>
+</mapper>

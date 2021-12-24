@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.funicorn.basic.common.base.config.BaseAutoConfiguration,\
+  com.funicorn.basic.common.base.util.AppContextUtil

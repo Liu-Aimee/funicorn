@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.chart.center.mapper.FunctionSqlMapper">
+  <resultMap id="datavDataSetSqlResultMap" type="com.funicorn.cloud.chart.center.entity.FunctionSql">
+  </resultMap>
+
+  <select id="queryPage" parameterType="com.funicorn.cloud.chart.center.dto.FunctionSqlDTO" resultType="com.funicorn.cloud.chart.center.vo.FunctionSqlVO">
+    SELECT
+      function_sql.*,
+      data_source.title
+    FROM
+      function_sql
+        INNER JOIN data_source ON data_source.id = function_sql.DATASOURCE_ID
+    WHERE function_sql.IS_DELETE = '0' AND data_source.is_delete = '0'
+    <if test="functionSqlDTO.name!=null and functionSqlDTO.name!=''">
+      AND function_sql.NAME LIKE concat('%',#{functionSqlDTO.name},'%')
+    </if>
+    <if test="functionSqlDTO.dataSourceId!=null and functionSqlDTO.dataSourceId!=''">
+      AND function_sql.DATASOURCE_ID = #{functionSqlDTO.dataSourceId}
+    </if>
+    <if test="functionSqlDTO.createBy!=null and functionSqlDTO.createBy!=''">
+      AND function_sql.created_by = #{functionSqlDTO.createBy}
+    </if>
+      ORDER BY function_sql.created_time desc
+  </select>
+</mapper>

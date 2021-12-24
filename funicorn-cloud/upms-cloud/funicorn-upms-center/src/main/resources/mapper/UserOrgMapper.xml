@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.upms.center.mapper.UserOrgMapper">
+    <resultMap id="userInfoMap" type="com.funicorn.cloud.upms.api.model.UserInfo">
+    </resultMap>
+    <select id="selectPageOrgUsers" parameterType="com.funicorn.cloud.upms.center.dto.UserOrgPageDTO" resultMap="userInfoMap">
+        SELECT u.*, o.id as orgId,o.name as orgName
+          FROM user u
+               INNER JOIN user_org uo ON uo.user_id = u.id
+               INNER JOIN organization o ON o.id = uo.org_id
+        where u.is_delete = 0 and o.is_delete = 0 and o.tenant_id = #{org.tenantId}
+        <if test="org.orgId!=null and org.orgId!=''">
+            and o.id = #{org.orgId}
+        </if>
+        ORDER BY uo.created_time desc
+    </select>
+
+    <select id="selectOrgUsers" parameterType="java.lang.String" resultMap="userInfoMap">
+        SELECT u.*, o.id as orgId,o.name as orgName
+          FROM user u
+               INNER JOIN user_org uo ON uo.user_id = u.id
+               INNER JOIN organization o ON o.id = uo.org_id
+         where u.is_delete = 0 and o.is_delete = 0 and o.tenant_id = #{tenantId}
+        <if test="orgId!=null and orgId!=''">
+            and o.id = #{orgId}
+        </if>
+        ORDER BY uo.created_time desc
+    </select>
+    
+    <select id="selectUnbindOrgUsers" parameterType="java.lang.String" resultMap="userInfoMap">
+        SELECT user.*
+          FROM user INNER JOIN user_tenant ON user_tenant.user_id = user.id
+         WHERE NOT EXISTS ( SELECT 1 FROM user_org WHERE user_id = user.id AND org_id = #{orgId} AND tenant_id = #{tenantId})
+           AND user_tenant.tenant_id = #{tenantId}
+    </select>
+</mapper>

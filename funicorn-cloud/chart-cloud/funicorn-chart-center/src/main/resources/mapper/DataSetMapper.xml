@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.chart.center.mapper.DataSetMapper">
+  <resultMap id="datavDataSetResultMap" type="com.funicorn.cloud.chart.center.entity.DataSet">
+  </resultMap>
+
+  <select id="queryPage" parameterType="com.funicorn.cloud.chart.center.dto.DataSetDTO" resultType="com.funicorn.cloud.chart.center.vo.DataSetVO">
+    SELECT
+      data_set.* ,
+      analysis_project.NAME as projectName
+    FROM
+      data_set
+        LEFT JOIN analysis_project ON analysis_project.id = data_set.PROJECT_ID
+    where data_set.IS_DELETE = '0'
+    <if test="dataSetDTO.createBy!=null and dataSetDTO.createBy!=''">
+      and data_set.CREATED_BY = #{dataSetDTO.createBy}
+    </if>
+    <if test="dataSetDTO.name!=null and dataSetDTO.name!=''">
+      and data_set.NAME like concat('%',#{cdataSetDTO.name},'%')
+    </if>
+    <if test="dataSetDTO.type!=null and dataSetDTO.type!=''">
+      and data_set.TYPE = #{dataSetDTO.type}
+    </if>
+    <if test="dataSetDTO.projectId!=null and dataSetDTO.projectId!=''">
+      and data_set.PROJECT_ID = #{dataSetDTO.projectId}
+    </if>
+  </select>
+</mapper>

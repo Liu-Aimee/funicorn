@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.upms.center.mapper.MenuMapper">
+    <resultMap id="menuResultMap" type="com.funicorn.cloud.upms.center.entity.Menu">
+    </resultMap>
+
+    <select id="selectMenuByAppId" parameterType="java.lang.String" resultMap="menuResultMap">
+        select *
+          from menu
+         where is_delete = '0'
+           and app_id = #{appId}
+        order by parent_id, sort
+    </select>
+
+    <select id="selectCurrentMenus" parameterType="java.util.Map" resultMap="menuResultMap">
+        SELECT menu.*
+          FROM menu INNER JOIN role_menu ON menu.id = role_menu.menu_id
+         WHERE menu.is_delete = 0
+           AND menu.status = 'show'
+           AND menu.app_id = #{appId}
+           AND role_menu.role_id in
+        <foreach collection="roleIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by menu.parent_id, menu.sort
+    </select>
+
+    <select id="selectMenusByRoleId" parameterType="java.lang.String" resultMap="menuResultMap">
+        select m.*
+          from menu m inner join role_menu rm  on rm.menu_id = m.id
+         where m.is_delete = '0'
+           and m.status = 'show'
+           and rm.role_id = #{roleId}
+           and m.app_id = #{appId}
+        order by m.parent_id, sort
+    </select>
+</mapper>

@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.funicorn.basic.common.security.config.SecurityAutoConfiguration,\
+  com.funicorn.basic.common.security.config.ResourceServerConfig,\
+  com.funicorn.basic.common.security.config.SecurityWebMvcConfig

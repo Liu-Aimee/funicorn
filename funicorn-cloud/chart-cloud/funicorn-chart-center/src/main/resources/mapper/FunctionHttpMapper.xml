@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.chart.center.mapper.FunctionHttpMapper">
+
+    <select id="queryPage" parameterType="com.funicorn.cloud.chart.center.dto.FunctionHttpDTO" resultType="com.funicorn.cloud.chart.center.vo.FunctionHttpVO">
+        SELECT function_http.*
+          FROM function_http
+         WHERE function_http.IS_DELETE = '0'
+        <if test="functionHttpDTO.name!=null and functionHttpDTO.name!=''">
+            AND function_http.NAME LIKE concat('%',#{functionHttpDTO.name},'%')
+        </if>
+        <if test="functionHttpDTO.createdBy!=null and functionHttpDTO.createdBy!=''">
+            AND function_http.created_by = #{functionHttpDTO.createBy}
+        </if>
+        ORDER BY function_http.created_time desc
+    </select>
+</mapper>

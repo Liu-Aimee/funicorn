@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.upms.center.mapper.UserMapper">
+    <resultMap id="userResultMap" type="com.funicorn.cloud.upms.center.entity.User">
+    </resultMap>
+
+    <select id="selectUserPage" parameterType="java.util.Map" resultMap="userResultMap">
+        SELECT DISTINCT u.*
+          FROM user u INNER JOIN user_tenant ut on u.id = ut.user_id
+         where u.is_delete = 0
+           and ut.type = #{user.type}
+        <if test="user.username!=null and user.username!=''">
+            and u.username like concat('%',#{user.username},'%')
+        </if>
+        <if test="user.nickname!=null and user.nickname!=''">
+            and u.nick_name like concat('%',#{user.nickname},'%')
+        </if>
+        <if test="user.tenantId!=null and user.tenantId!=''">
+            and ut.tenant_id = #{user.tenantId}
+        </if>
+    </select>
+</mapper>

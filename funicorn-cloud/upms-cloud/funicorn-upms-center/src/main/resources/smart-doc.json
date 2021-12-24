@@ -1,0 +1,7 @@
+{
+  "serverUrl": "http://192.168.140.140:8083",
+  "isStrict": false,
+  "allInOne": true,
+  "outPath": "src/main/resources/static/doc",
+  "projectName": "权限管理"
+}

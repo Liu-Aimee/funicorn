@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: @project.artifactId@
+  cloud:
+    nacos:
+      discovery:
+        # 106.13.217.154
+        server-addr: ${NACOS_HOST:192.168.140.140}:${NACOS_PORT:8848}
+        username: nacos
+        password: nacos
+        namespace: FUnicorn
+      config:
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs:
+          - application-public-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+        username: nacos
+        password: nacos
+        namespace: FUnicorn
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true

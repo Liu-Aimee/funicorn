@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.funicorn.basic.common.amqp.config.RabbitMqConfig,\
+  com.funicorn.basic.common.amqp.config.RabbitMqBeanRegister

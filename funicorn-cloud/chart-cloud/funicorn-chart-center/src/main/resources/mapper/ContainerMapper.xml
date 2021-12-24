@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.chart.center.mapper.ContainerMapper">
+  <resultMap id="datavContainerResultMap" type="com.funicorn.cloud.chart.center.entity.Container">
+  </resultMap>
+
+  <select id="selectMarketMage" parameterType="com.funicorn.cloud.chart.center.dto.ContainerPageDTO" resultType="com.funicorn.cloud.chart.center.vo.ContainerVO">
+    SELECT
+      container.*,
+      chart_type.router,
+      chart_type.example
+    FROM
+      container
+        INNER JOIN chart_type ON chart_type.id = container.TYPE_ID
+        INNER JOIN chart_category on chart_category.ID = chart_type.category_id
+   where container.is_delete = 0
+     and chart_type.is_delete = 0
+     and chart_category.IS_DELETE = 0
+    <if test="containerPageDTO.name!=null and containerPageDTO.name!=''">
+      and container.NAME like concat('%',#{containerPageDTO.name},'%')
+    </if>
+    <if test="containerPageDTO.isRelease!=null and containerPageDTO.isRelease!=''">
+      and container.IS_RELEASE = #{containerPageDTO.isRelease}
+    </if>
+    <if test="containerPageDTO.categoryId!=null and containerPageDTO.categoryId!=''">
+      and chart_category.ID = #{containerPageDTO.categoryId}
+    </if>
+    <if test="containerPageDTO.typeId!=null and containerPageDTO.typeId!=''">
+      and chart_type.ID = #{containerPageDTO.typeId}
+    </if>
+  </select>
+
+    <select id="queryManagePage" parameterType="com.funicorn.cloud.chart.center.dto.ContainerDTO" resultType="com.funicorn.cloud.chart.center.vo.ContainerSetVO">
+        SELECT
+        container.*,
+        chart_type.router
+        FROM
+        container
+        INNER JOIN chart_type ON chart_type.id = container.TYPE_ID
+        INNER JOIN chart_category on chart_category.ID = chart_type.category_id
+        where container.is_delete = 0
+        and chart_type.is_delete = 0
+        and chart_category.IS_DELETE = 0
+        <if test="containerDTO.name!=null and containerDTO.name!=''">
+            and container.NAME like concat('%',#{containerDTO.name},'%')
+        </if>
+        <if test="containerDTO.isRelease!=null and containerDTO.isRelease!=''">
+            and container.IS_RELEASE = #{containerDTO.isRelease}
+        </if>
+        <if test="containerDTO.categoryId!=null and containerDTO.categoryId!=''">
+            and chart_category.ID = #{containerDTO.categoryId}
+        </if>
+        <if test="containerDTO.typeId!=null and containerDTO.typeId!=''">
+            and chart_type.ID = #{containerDTO.typeId}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.task.center.mapper.ActHiTaskinstMapper">
+
+    <resultMap id="resultTaskMap" type="com.funicorn.cloud.task.center.vo.TaskVO">
+        <result column="ID_" property="id"/>
+        <result column="EXECUTION_ID_" property="executionId"/>
+        <result column="PROC_INST_ID_" property="processInstanceId"/>
+        <result column="PROC_DEF_ID_" property="processDefinitionId"/>
+        <result column="NAME_" property="name"/>
+        <result column="PARENT_TASK_ID_" property="parentTaskId"/>
+        <result column="TASK_DEF_KEY_" property="taskDefinitionKey"/>
+        <result column="OWNER_" property="owner"/>
+        <result column="ASSIGNEE_" property="assignee"/>
+        <result column="CREATE_TIME_" property="createTime"/>
+        <result column="TENANT_ID_" property="tenantId"/>
+        <result column="procInstName" property="processInstanceName"/>
+        <result column="END_TIME_" property="endTime"/>
+    </resultMap>
+
+    <select id="queryTaskByAssignee" parameterType="java.lang.String" resultMap="resultTaskMap">
+        SELECT aht.*, ahp.NAME_ as procInstName
+          FROM act_hi_taskinst AS aht INNER JOIN act_hi_procinst ahp ON aht.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        WHERE ASSIGNEE_ = #{assignee}
+          AND aht.END_TIME_ IS NOT NULL
+    </select>
+</mapper>

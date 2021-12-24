@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.basic.cloud.security.mapper.UserMapper">
+
+    <select id="selectUserById" parameterType="java.lang.String" resultType="com.funicorn.basic.cloud.security.vo.UserVO">
+        SELECT u.*, ut.tenant_id, ut.tenant_name, ut.type, uo.org_id, uo.org_name
+          FROM user u
+                 INNER JOIN user_tenant ut ON u.id = ut.user_id
+                 INNER JOIN tenant t ON t.id = ut.tenant_id
+                 LEFT JOIN user_org uo ON uo.user_id = u.id
+        WHERE u.is_delete = '0'
+          AND t.is_delete = '0'
+          AND u.username = #{username}
+          AND ut.tenant_id = #{tenantId}
+    </select>
+</mapper>

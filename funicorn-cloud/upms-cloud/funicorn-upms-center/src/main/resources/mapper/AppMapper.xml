@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.upms.center.mapper.AppMapper">
+
+    <resultMap id="appResultMap" type="com.funicorn.cloud.upms.center.entity.App">
+    </resultMap>
+
+    <select id="selectUnbindList" parameterType="java.lang.String" resultMap="appResultMap">
+        SELECT
+            oauth_client_details.id,
+            oauth_client_details.`name`,
+            oauth_client_details.client_id,
+            oauth_client_details.scope,
+            oauth_client_details.web_server_redirect_uri,
+            oauth_client_details.authorized_grant_types,
+            oauth_client_details.access_token_validity,
+            oauth_client_details.refresh_token_validity,
+            oauth_client_details.description,
+            IFNULL(app_tenant.`status`,oauth_client_details.`status`) as status
+        FROM oauth_client_details LEFT JOIN app_tenant ON app_tenant.app_id = oauth_client_details.id
+        where app_tenant.tenant_id = #{tenantId}
+          and app_tenant.`status` not in (0,1)
+    </select>
+
+    <select id="queryPage" parameterType="com.funicorn.cloud.upms.center.dto.AppPageDTO" resultMap="appResultMap">
+        SELECT oauth_client_details.*
+          FROM oauth_client_details
+         WHERE created_by = #{model.username} AND is_delete = '0'
+
+        UNION
+
+        SELECT oauth_client_details.*
+          FROM oauth_client_details INNER JOIN role_app ON role_app.app_id = oauth_client_details.id
+         WHERE oauth_client_details.is_delete = '0'
+           AND role_app.role_id IN
+               <foreach item="id" collection="model.roleIds" separator="," open="(" close=")" index="">
+                 #{id}
+               </foreach>
+    </select>
+</mapper>

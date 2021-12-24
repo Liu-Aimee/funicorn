@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.funicorn.cloud.system.center.mapper.DictTypeMapper">
+
+    <select id="queryPage" parameterType="com.funicorn.cloud.system.center.dto.DictItemPageDTO" resultType="com.funicorn.cloud.system.center.entity.DictItem">
+        SELECT dict_item.* FROM dict_item
+               INNER JOIN dict_type ON dict_item.dict_type = dict_type.type
+         where dict_item.is_delete = '0'
+           and dict_type.is_delete = '0'
+        <if test="model.dictType!=null and model.dictType!=''">
+            and dict_item.dict_type = #{model.dictType}
+        </if>
+        order by dict_item.sort
+    </select>
+</mapper>

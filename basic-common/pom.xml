@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.FUnicorn</groupId>
+        <artifactId>funicorn</artifactId>
+        <version>1.0.0-RELEASE</version>
+    </parent>
+    <artifactId>basic-common</artifactId>
+    <name>basic-common</name>
+    <description>基础依赖POM</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>basic-common-base</module>
+        <module>basic-common-datasource</module>
+        <module>basic-common-cloud</module>
+        <module>basic-common-feign</module>
+        <module>basic-common-timer</module>
+        <module>basic-common-security</module>
+        <module>basic-common-amqp</module>
+        <module>basic-common-redis</module>
+        <module>basic-common-netty</module>
+        <module>basic-common-rocketmq</module>
+        <module>basic-common-mqtt</module>
+    </modules>
+
+</project>
