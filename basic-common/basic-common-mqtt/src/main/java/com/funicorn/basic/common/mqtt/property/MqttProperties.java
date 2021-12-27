@@ -15,40 +15,108 @@ import java.util.List;
 @Data
 public class MqttProperties {
 
+    /**
+     * 驱动数组
+     * */
     private List<Driver> drivers;
 
     @Data
     public static class Driver{
 
+        /**
+         * 驱动地址
+         * */
         private String url;
 
+        /**
+         * 用户名
+         * */
         private String username;
 
+        /**
+         * 密码
+         * */
         private String password;
 
-        private Integer keepAlive;
+        /**
+         * 保持连接时常 单位秒
+         * */
+        private Integer keepAlive = 30;
 
+        /**
+         * 连接超时 单位秒
+         * */
         private Integer connectionTimeout = 30;
 
-        private String clientId;
+        /**
+         * 客户端id前缀
+         * */
+        private String clientIdPrefix;
 
+        /**
+         * 发布默认配置
+         * */
+        private Publish publish;
+
+        /**
+         * 订阅列表
+         * */
+        private Subscribe subscribe;
+    }
+
+    @Data
+    public static class Subscribe{
+
+        /**
+         * 通道名称
+         * */
+        private String channelName;
+
+        /**
+         *
+         * */
         private List<Topic> topics;
     }
 
     @Data
-    public static class Topic{
+    public static class Publish{
 
         /**
-         * subscribe/publish
+         * 通道名称
          * */
-        private String model = "subscribe";
+        private String channelName;
 
-        private String topicName;
+        /**
+         * 默认主题
+         * */
+        private String defaultTopic;
 
+        /**
+         * 消息等级
+         * */
+        private Integer defaultQos = 0;
+
+        /**
+         * 是否发送异步
+         * */
+        private Boolean async = true;
+
+        /**
+         * 是否保留最后一条消息
+         * */
+        private Boolean defaultRetained = false;
+    }
+
+    @Data
+    public static class Topic{
+        /**
+         * 主题名
+         * */
+        private String topic;
+
+        /**
+         * 消息等级
+         * */
         private Integer qos = 0;
-
-        private boolean async = true;
-
-        private boolean retained = false;
     }
 }

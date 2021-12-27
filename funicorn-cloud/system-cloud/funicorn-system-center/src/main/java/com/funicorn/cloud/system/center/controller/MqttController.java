@@ -16,7 +16,7 @@ public class MqttController {
 
     @GetMapping("/sendMessage")
     public Result<?> sendMessage(){
-        MqttUtil.sendMessage("发送测试消息到mqtt服务器","demo/test/pop",0);
+        MqttUtil.sendMessage("发送测试消息到mqtt服务器");
         return Result.ok();
     }
 }

@@ -1,5 +1,6 @@
 package com.funicorn.cloud.system.center.mqtt;
 
+import com.funicorn.basic.common.mqtt.util.MqttUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -17,9 +18,11 @@ public class DemoReceiveHandler {
 
     @SuppressWarnings("all")
     @Bean
-    @ServiceActivator(inputChannel = "demo/test/pop")
+    @ServiceActivator(inputChannel = "demo-channel")
     public MessageHandler handler(){
         return message ->{
+            //根据不同的topic走不同的处理逻辑
+            log.info(MqttUtil.getHeader(message.getHeaders()).toString());
             log.info(message.getPayload().toString());
         };
     }

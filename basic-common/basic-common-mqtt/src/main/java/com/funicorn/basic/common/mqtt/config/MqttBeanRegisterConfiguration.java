@@ -1,8 +1,10 @@
 package com.funicorn.basic.common.mqtt.config;
 
 import com.funicorn.basic.common.mqtt.property.MqttProperties;
+import com.funicorn.basic.common.mqtt.util.MqttUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -51,15 +54,13 @@ public class MqttBeanRegisterConfiguration implements ApplicationContextAware {
         if (mqttProperties==null || mqttProperties.getDrivers()==null || mqttProperties.getDrivers().isEmpty()) {
             return;
         }
-
         List<String> initList = new ArrayList<>();
         ConfigurableApplicationContext configApp = (ConfigurableApplicationContext) applicationContext;
         BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) configApp.getBeanFactory();
-
         int i = 0;
         for (MqttProperties.Driver driver : mqttProperties.getDrivers()) {
             if (initList.contains(driver.getUrl())) {
-                return;
+                throw new IllegalArgumentException("存在重复的mqtt.drivers.url,请检查!");
             }
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setUserName(driver.getUsername());
@@ -70,42 +71,65 @@ public class MqttBeanRegisterConfiguration implements ApplicationContextAware {
             BeanDefinitionBuilder mqttFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(DefaultMqttPahoClientFactory.class);
             mqttFactoryBuilder.addPropertyValue("connectionOptions",mqttConnectOptions);
             beanFactory.registerBeanDefinition("mqttClientFactory" + i,mqttFactoryBuilder.getRawBeanDefinition());
-            int j = 0;
-            for (MqttProperties.Topic topic : driver.getTopics()) {
-                if (initList.contains(topic.getTopicName())){
-                    continue;
+            //订阅列表
+            if (driver.getSubscribe()!=null && driver.getSubscribe().getTopics()!=null && !driver.getSubscribe().getTopics().isEmpty()) {
+                if (StringUtils.isBlank(driver.getSubscribe().getChannelName())){
+                    throw new IllegalArgumentException("mqtt.drivers.publish.channel-name 配置不合法!");
                 }
-                //订阅
-                if (ModelEnum.subscribe.toString().equalsIgnoreCase(topic.getModel())) {
-                    BeanDefinitionBuilder directChannelBuilder = BeanDefinitionBuilder.genericBeanDefinition(DirectChannel.class);
-                    directChannelBuilder.addConstructorArgValue(new RoundRobinLoadBalancingStrategy());
-                    beanFactory.registerBeanDefinition(topic.getTopicName(),directChannelBuilder.getRawBeanDefinition());
-                    //adapter
-                    BeanDefinitionBuilder adapterBuilder = BeanDefinitionBuilder.genericBeanDefinition(MqttPahoMessageDrivenChannelAdapter.class);
-                    adapterBuilder.addConstructorArgValue(driver.getUrl());
-                    adapterBuilder.addConstructorArgValue(driver.getClientId() + "_" + ModelEnum.subscribe.toString());
-                    adapterBuilder.addConstructorArgValue(applicationContext.getBean("mqttClientFactory" + i));
-                    adapterBuilder.addConstructorArgValue(topic.getTopicName());
-                    adapterBuilder.addPropertyValue("qos",topic.getQos());
-                    adapterBuilder.addPropertyValue("outputChannel",applicationContext.getBean(topic.getTopicName()));
-                    adapterBuilder.addPropertyValue("converter",new DefaultPahoMessageConverter());
-                    beanFactory.registerBeanDefinition("inbound" + j,adapterBuilder.getRawBeanDefinition());
+                if (initList.contains(driver.getSubscribe().getChannelName())) {
+                    throw new IllegalArgumentException("存在重复的channel-name,请检查!");
                 }
-                //发布
-                if (ModelEnum.publish.toString().equalsIgnoreCase(topic.getModel())) {
-                    BeanDefinitionBuilder publishHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(MqttPahoMessageHandler.class);
-                    publishHandlerBuilder.addConstructorArgValue(driver.getUrl());
-                    publishHandlerBuilder.addConstructorArgValue(driver.getClientId() + "_" + ModelEnum.publish.toString());
-                    publishHandlerBuilder.addConstructorArgValue(applicationContext.getBean("mqttClientFactory" + i));
-                    publishHandlerBuilder.addPropertyValue("async",topic.isAsync());
-                    publishHandlerBuilder.addPropertyValue("defaultQos",topic.getQos());
-                    publishHandlerBuilder.addPropertyValue("defaultTopic",topic.getTopicName());
-                    publishHandlerBuilder.addPropertyValue("defaultRetained",topic.isRetained());
-                    beanFactory.registerBeanDefinition(topic.getTopicName() + "_" + ModelEnum.publish.toString(),publishHandlerBuilder.getRawBeanDefinition());
+                BeanDefinitionBuilder directChannelBuilder = BeanDefinitionBuilder.genericBeanDefinition(DirectChannel.class);
+                directChannelBuilder.addConstructorArgValue(new RoundRobinLoadBalancingStrategy());
+                beanFactory.registerBeanDefinition(driver.getSubscribe().getChannelName(),directChannelBuilder.getRawBeanDefinition());
+
+                List<String> topics = new LinkedList<>();
+                List<Integer> qosList = new LinkedList<>();
+                for (MqttProperties.Topic topic : driver.getSubscribe().getTopics()) {
+                    if (StringUtils.isBlank(topic.getTopic())) {
+                        throw new IllegalArgumentException("mqtt.drivers.subscribe 配置不合法!");
+                    }
+                    topics.add(topic.getTopic());
+                    qosList.add(topic.getQos()==null ? 0 : topic.getQos());
                 }
-                initList.add(topic.getTopicName() + "_" + topic.getModel());
-                j++;
-                log.info("------>topic:[{}]-model[{}] init success.",topic.getTopicName(),topic.getModel());
+                BeanDefinitionBuilder adapterBuilder = BeanDefinitionBuilder.genericBeanDefinition(MqttPahoMessageDrivenChannelAdapter.class);
+                adapterBuilder.addConstructorArgValue(driver.getUrl());
+                adapterBuilder.addConstructorArgValue(driver.getClientIdPrefix() + "_" + ModelEnum.subscribe.toString());
+                adapterBuilder.addConstructorArgValue(applicationContext.getBean("mqttClientFactory" + i));
+                adapterBuilder.addConstructorArgValue(topics.toArray());
+                adapterBuilder.addPropertyValue("qos",qosList.toArray());
+                adapterBuilder.addPropertyValue("outputChannel",applicationContext.getBean(driver.getSubscribe().getChannelName()));
+                adapterBuilder.addPropertyValue("converter",new DefaultPahoMessageConverter());
+                beanFactory.registerBeanDefinition("inbound_" + driver.getSubscribe().getChannelName(),adapterBuilder.getRawBeanDefinition());
+                initList.add(driver.getPublish().getChannelName());
+                log.info("------>model[subscribe] and channelName[{}] init success.",driver.getSubscribe().getChannelName());
+            }
+            //发布列表
+            if (driver.getPublish()!=null) {
+                if (StringUtils.isBlank(driver.getPublish().getChannelName())){
+                    throw new IllegalArgumentException("mqtt.drivers.publish.channel-name 配置不合法!");
+                }
+                if (initList.contains(driver.getSubscribe().getChannelName())) {
+                    throw new IllegalArgumentException("存在重复的channel-name,请检查!");
+                }
+                if (StringUtils.isBlank(driver.getPublish().getDefaultTopic())){
+                    throw new IllegalArgumentException("mqtt.drivers.publish.default-topic 配置不合法!");
+                }
+                BeanDefinitionBuilder publishHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(MqttPahoMessageHandler.class);
+                publishHandlerBuilder.addConstructorArgValue(driver.getUrl());
+                publishHandlerBuilder.addConstructorArgValue(driver.getClientIdPrefix() + "_" + ModelEnum.publish.toString());
+                publishHandlerBuilder.addConstructorArgValue(applicationContext.getBean("mqttClientFactory" + i));
+                publishHandlerBuilder.addPropertyValue("async", driver.getPublish().getAsync() == null || driver.getPublish().getAsync());
+                publishHandlerBuilder.addPropertyValue("defaultQos",driver.getPublish().getDefaultQos());
+                publishHandlerBuilder.addPropertyValue("defaultTopic",driver.getPublish().getDefaultTopic());
+                publishHandlerBuilder.addPropertyValue("defaultRetained",driver.getPublish().getDefaultRetained() == null || driver.getPublish().getDefaultRetained());
+                beanFactory.registerBeanDefinition(driver.getPublish().getChannelName(),publishHandlerBuilder.getRawBeanDefinition());
+                initList.add(driver.getPublish().getChannelName());
+                log.info("------>model[publish] and channelName[{}] init success.",driver.getPublish().getChannelName());
+                if (StringUtils.isBlank(MqttUtil.DEFAULT_CHANNEL_NAME)) {
+                    MqttUtil.DEFAULT_CHANNEL_NAME = driver.getPublish().getChannelName();
+                    log.info("------>set the default_channel_name is [{}].",driver.getPublish().getChannelName());
+                }
             }
             i++;
             initList.add(driver.getUrl());
