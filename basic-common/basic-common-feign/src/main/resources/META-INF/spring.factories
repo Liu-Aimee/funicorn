@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.funicorn.basic.common.feign.config.FeignConfig
+  com.funicorn.basic.common.feign.config.FeignConfig,\
+  com.funicorn.basic.common.feign.aspect.InnerAspect,\
+  com.funicorn.basic.common.feign.exception.FeignCallExceptionHandler

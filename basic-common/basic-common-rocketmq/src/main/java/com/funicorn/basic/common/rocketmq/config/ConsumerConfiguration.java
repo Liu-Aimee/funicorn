@@ -32,6 +32,8 @@ public class ConsumerConfiguration {
 
     /**
      * mq 消费者配置
+     * @return DefaultMQPushConsumer
+     * @throws Exception 异常
      */
     @ConditionalOnBean({RocketMqProperties.class,ConsumeMsgListener.class})
     @Bean

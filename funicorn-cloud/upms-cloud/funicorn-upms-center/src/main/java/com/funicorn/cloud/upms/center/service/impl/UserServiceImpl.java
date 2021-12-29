@@ -89,9 +89,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public UserInfo getUserInfo(String username) {
-        if (StringUtils.isBlank(username)){
-            username = SecurityUtil.getCurrentUser().getUsername();
-        }
         User user = baseMapper.selectOne(Wrappers.<User>lambdaQuery().eq(User::getUsername,username));
         if (user==null){
             throw new UpmsException(ErrorCode.USER_NOT_EXISTS);

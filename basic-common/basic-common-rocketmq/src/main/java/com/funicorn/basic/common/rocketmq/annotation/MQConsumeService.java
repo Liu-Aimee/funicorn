@@ -15,11 +15,13 @@ import java.lang.annotation.*;
 public @interface MQConsumeService {
     /**
      * 消息主题
+     * @return topic
      */
     String topic();
 
     /**
      * 消息标签,如果是该主题下所有的标签，使用“*”
+     * @return tags
      */
     String[] tags();
 

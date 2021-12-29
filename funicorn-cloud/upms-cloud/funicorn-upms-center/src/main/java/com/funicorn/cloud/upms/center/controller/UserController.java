@@ -6,6 +6,7 @@ import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.base.util.DateUtil;
 import com.funicorn.basic.common.base.valid.Insert;
 import com.funicorn.basic.common.base.valid.Update;
+import com.funicorn.basic.common.feign.annotation.Inner;
 import com.funicorn.basic.common.security.model.CurrentUser;
 import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.system.api.model.FileLevel;
@@ -60,11 +61,12 @@ public class UserController {
 
     /**
      * 查询用户信息
-     * @param username 用户名 默认当前登录用户名
+     * @param username 用户名
      * @return Result
      * */
+    @Inner
     @GetMapping("/getUserInfo")
-    public Result<UserInfo> getUserInfo(@RequestParam(required = false) String username){
+    public Result<UserInfo> getUserInfo(@RequestParam String username){
         return Result.ok(userService.getUserInfo(username));
     }
 

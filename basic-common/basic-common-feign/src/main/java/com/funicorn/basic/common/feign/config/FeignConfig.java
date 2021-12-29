@@ -21,6 +21,7 @@ public class FeignConfig implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
+        template.header(BaseConstant.HEADER_WHERE_CALL_KEY, BaseConstant.INNER_CALL);
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes!=null) {
             HttpServletRequest request = attributes.getRequest();

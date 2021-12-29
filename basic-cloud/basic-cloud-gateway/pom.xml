@@ -17,6 +17,43 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
+        <!-- 必须依赖feign client 否则lb://模式会报503-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <!-- feign client 支持表单提交必要依赖 -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form-spring</artifactId>
+        </dependency>
+        <!-- 排除掉 spring-boot-starter-web 否则无法启动-->
+        <dependency>
+            <groupId>com.FUnicorn</groupId>
+            <artifactId>basic-common-base</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-cloud</artifactId>
@@ -34,22 +71,6 @@
         <dependency>
             <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-datasource</artifactId>
-        </dependency>
-        <!-- 必须依赖feign client 否则lb://模式会报503-->
-        <dependency>
-            <groupId>com.FUnicorn</groupId>
-            <artifactId>basic-common-feign</artifactId>
-        </dependency>
-        <!-- 排除掉 spring-boot-starter-web 否则无法启动-->
-        <dependency>
-            <groupId>com.FUnicorn</groupId>
-            <artifactId>basic-common-base</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

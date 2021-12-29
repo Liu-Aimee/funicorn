@@ -12,6 +12,21 @@ public class BaseConstant {
     public static final String ACCESS_TOKEN = "Authorization";
 
     /**
+     * HEADER_WHERE_CALL_KEY
+     * */
+    public static final String HEADER_WHERE_CALL_KEY = "Where-Call";
+
+    /**
+     * INNER_CALL
+     * */
+    public static final String INNER_CALL = "INNER";
+
+    /**
+     * OUTER_CALL
+     * */
+    public static final String OUTER_CALL = "OUTER";
+
+    /**
      * 字符编码格式
      * */
     public static final String CHARSET_UTF8 = "utf-8";
