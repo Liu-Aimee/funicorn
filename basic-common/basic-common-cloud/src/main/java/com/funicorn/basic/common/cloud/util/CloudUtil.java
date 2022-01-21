@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 public class CloudUtil {
 
     /**
-     * 获取当前接的的ip地址
+     * 获取当前接入的ip地址
      * @return String ip地址
      * */
     public static String getRemoteAddr() {

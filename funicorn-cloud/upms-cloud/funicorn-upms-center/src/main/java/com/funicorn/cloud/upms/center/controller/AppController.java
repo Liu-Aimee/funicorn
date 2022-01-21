@@ -23,6 +23,7 @@ import com.funicorn.cloud.upms.center.service.AppService;
 import com.funicorn.cloud.upms.center.service.AppTenantService;
 import com.funicorn.cloud.upms.center.service.RoleAppService;
 import com.funicorn.cloud.upms.center.vo.TenantBindVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
  * @author Aimee
  * @since 2021-10-31
  */
+@Slf4j
 @RestController
 @RequestMapping("/App")
 public class AppController {

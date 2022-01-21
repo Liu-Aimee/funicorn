@@ -38,6 +38,12 @@
             <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-security</artifactId>
         </dependency>
+        <!-- 日志集成elk -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>6.1</version>
+        </dependency>
     </dependencies>
 
     <build>
