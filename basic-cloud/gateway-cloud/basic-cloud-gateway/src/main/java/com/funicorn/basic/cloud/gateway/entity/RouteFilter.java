@@ -1,4 +1,4 @@
-package com.funicorn.cloud.system.center.entity;
+package com.funicorn.basic.cloud.gateway.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

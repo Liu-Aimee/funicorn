@@ -84,6 +84,11 @@ public enum SystemErrorCode {
      * 绑定了字典项，不允许删除
      * */
     ROUTE_PREDICATE_TYPE_IS_EXISTS(-315,"断言类型已存在"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_FILTER_TYPE_IS_EXISTS(-316,"断言类型已存在"),
             ;
 
     private final int status;

@@ -1,4 +1,4 @@
-package com.funicorn.cloud.system.center.entity;
+package com.funicorn.basic.cloud.gateway.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -20,8 +20,8 @@ import java.io.Serializable;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("route_filter")
-public class RouteFilter extends BaseModel implements Serializable{
+@TableName("route_predicate")
+public class RoutePredicate extends BaseModel implements Serializable{
 
   private static final long serialVersionUID=1L;
 
@@ -30,15 +30,15 @@ public class RouteFilter extends BaseModel implements Serializable{
    */
   @TableId(value = "id", type = IdType.ASSIGN_ID)
   private String id;
-
+    
   /**
    * 路由id
    */
   @TableField(value = "route_id")
   private String routeId;
-    
+
   /**
-   * 类型 AddRequestHeader/AddRequestParameter/AddResponseHeader/Hystrix/PrefixPath/PreserveHostHeader/name/RedirectTo/RemoveRequestHeader/RemoveResponseHeader/RewritePath/RewriteResponseHeader/SaveSession/SetPath/SetResponseHeader/SetStatus/StripPrefix
+   * 类型 After/Before/Between/Cookie/Header/Host/Method/Path/Query/RemoteAddr
    */
   @TableField(value = "type")
   private String type;

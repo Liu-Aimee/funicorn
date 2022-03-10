@@ -4,16 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.FUnicorn</groupId>
-        <artifactId>funicorn</artifactId>
+        <artifactId>basic-cloud</artifactId>
         <version>1.0.0-RELEASE</version>
     </parent>
-    <artifactId>basic-cloud</artifactId>
-    <name>basic-cloud</name>
-    <description>基础微服务POM</description>
+    <artifactId>gateway-cloud</artifactId>
+    <name>gateway-cloud</name>
+    <description>服务网关</description>
     <packaging>pom</packaging>
 
     <modules>
-        <module>gateway-cloud</module>
-        <module>basic-cloud-security</module>
+        <module>basic-cloud-gateway</module>
+        <module>basic-gateway-api</module>
     </modules>
 </project>
