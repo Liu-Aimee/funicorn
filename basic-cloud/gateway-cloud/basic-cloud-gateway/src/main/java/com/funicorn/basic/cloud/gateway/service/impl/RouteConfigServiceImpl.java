@@ -31,4 +31,13 @@ public class RouteConfigServiceImpl extends ServiceImpl<RouteConfigMapper, Route
         }
         gatewayRouteConfig.updateRoute(routeConfig);
     }
+
+    @Override
+    public void uninstallRoute(String routeId) {
+        RouteConfig routeConfig = routeConfigService.getById(routeId);
+        if (routeConfig==null) {
+            return;
+        }
+        gatewayRouteConfig.removeRoute(routeId);
+    }
 }

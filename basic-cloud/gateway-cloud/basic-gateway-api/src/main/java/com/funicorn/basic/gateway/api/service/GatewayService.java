@@ -22,4 +22,12 @@ public interface GatewayService {
      * */
     @PatchMapping("/Route/reload/{routeId}")
     Result<?> reloadRoute(@PathVariable("routeId") String routeId);
+
+    /**
+     * 卸载网关转发路由配置
+     * @param routeId 路由id
+     * @return Result
+     * */
+    @PatchMapping("/Route/uninstall/{routeId}")
+    Result<?> uninstallRoute(@PathVariable("routeId") String routeId);
 }

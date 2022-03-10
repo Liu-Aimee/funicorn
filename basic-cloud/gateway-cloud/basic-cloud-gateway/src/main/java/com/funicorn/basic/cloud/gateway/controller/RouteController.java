@@ -26,6 +26,17 @@ public class RouteController {
     @PatchMapping("/reload/{routeId}")
     public Result<?> reloadRoute(@PathVariable("routeId") String routeId){
         routeConfigService.reloadRoute(routeId);
-        return Result.ok("修改成功");
+        return Result.ok("重载成功");
+    }
+
+    /**
+     * 修改网关转发路由配置
+     * @param routeId 路由id
+     * @return Result
+     * */
+    @DeleteMapping("/uninstall/{routeId}")
+    public Result<?> uninstallRoute(@PathVariable("routeId") String routeId){
+        routeConfigService.uninstallRoute(routeId);
+        return Result.ok("卸载成功");
     }
 }

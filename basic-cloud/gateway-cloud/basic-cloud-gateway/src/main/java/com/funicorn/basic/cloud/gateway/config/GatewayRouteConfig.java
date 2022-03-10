@@ -86,15 +86,6 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         this.publisher.publishEvent(new RefreshRoutesEvent(this));
     }
 
-    public void saveRoute(RouteConfig routeConfig){
-        RouteDefinition definition=initDefinition(routeConfig);
-        if (definition==null){
-            return;
-        }
-        routeDefinitionWriter.save(Mono.just(definition)).subscribe();
-        this.publisher.publishEvent(new RefreshRoutesEvent(this));
-    }
-
     public void updateRoute(RouteConfig routeConfig) {
         RouteDefinition definition=initDefinition(routeConfig);
         if (definition==null){
