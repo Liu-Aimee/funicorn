@@ -16,4 +16,11 @@ public class SystemConstant {
      * 未删
      * */
     public static final String NOT_DELETED = "0";
+
+    /** 超级管理员类别 */
+    public static final Integer TENANT_USER_SUPER = -1;
+    /** 租户普通用户类别 */
+    public static final Integer TENANT_USER_NORMAL = 0;
+    /** 租户管理员类别 */
+    public static final Integer TENANT_USER_ADMIN = 1;
 }

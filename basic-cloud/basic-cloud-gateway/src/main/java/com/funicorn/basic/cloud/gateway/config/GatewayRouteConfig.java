@@ -138,6 +138,9 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         String[] predicateArray = routeConfig.getPredicates().split(",");
         for (String predicateStr:predicateArray) {
             predicate.setName("Path");
+            if (!predicateStr.endsWith("/**")) {
+                predicateStr = predicateStr + "/**";
+            }
             predicateParams.put("pattern",predicateStr);
             predicate.setArgs(predicateParams);
             predicates.add(predicate);
@@ -157,7 +160,7 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         definition.setUri(uri);
         definition.setPredicates(predicates);
         definition.setFilters(filterDefinitions);
-        definition.setOrder(routeConfig.getOrder());
+        definition.setOrder(routeConfig.getOrder()==null ? 0 : routeConfig.getOrder());
         return definition;
     }
 }

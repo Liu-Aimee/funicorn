@@ -68,6 +68,12 @@ public class RouteConfig extends BaseModel implements Serializable{
   private String order;
 
   /**
+   * 租户id
+   */
+  @TableField(value = "tenant_id")
+  private String tenantId;
+
+  /**
    * 删除状态，0：未删，1：已删
    */
   @TableField(value = "is_delete")

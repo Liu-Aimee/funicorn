@@ -1,3 +1,4 @@
+/*
 package com.funicorn.cloud.system.center.mqtt;
 
 import com.funicorn.basic.common.mqtt.util.MqttUtil;
@@ -7,11 +8,13 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
+*/
 /**
  * mqtt订阅处理器示例
  * @author Aimee
  * @since 2021/12/24 10:10
- */
+ *//*
+
 @Component
 @Slf4j
 public class DemoReceiveHandler {
@@ -27,3 +30,4 @@ public class DemoReceiveHandler {
         };
     }
 }
+*/

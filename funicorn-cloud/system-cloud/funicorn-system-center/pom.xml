@@ -27,10 +27,10 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-mqtt</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-redis</artifactId>

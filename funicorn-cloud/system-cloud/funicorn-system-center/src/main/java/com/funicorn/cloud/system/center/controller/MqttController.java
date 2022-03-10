@@ -1,7 +1,6 @@
 package com.funicorn.cloud.system.center.controller;
 
 import com.funicorn.basic.common.base.model.Result;
-import com.funicorn.basic.common.mqtt.util.MqttUtil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +15,7 @@ public class MqttController {
 
     @GetMapping("/sendMessage")
     public Result<?> sendMessage(){
-        MqttUtil.sendMessage("发送测试消息到mqtt服务器");
+        //MqttUtil.sendMessage("发送测试消息到mqtt服务器");
         return Result.ok();
     }
 }

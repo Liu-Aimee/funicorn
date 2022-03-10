@@ -21,4 +21,9 @@ public class RouteQueryPageDTO extends PageDTO {
      * 转发地址
      * */
     private String uri;
+
+    /**
+     * 租户id
+     * */
+    private String tenantId;
 }

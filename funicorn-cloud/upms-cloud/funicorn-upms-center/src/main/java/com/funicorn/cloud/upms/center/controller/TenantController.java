@@ -57,20 +57,28 @@ public class TenantController {
      * @return Result<List<Tenant>>
      * */
     @GetMapping("/list")
-    public Result<List<Tenant>> list(){
+    public Result<List<Tenant>> list(@RequestParam(required = false) String tenantName){
         List<Tenant> tenants;
         CurrentUser currentUser = SecurityUtil.getCurrentUser();
         if (UpmsConstant.TENANT_USER_SUPER.equals(currentUser.getType())){
-            tenants = tenantService.list(Wrappers.<Tenant>lambdaQuery().eq(Tenant::getIsDelete, UpmsConstant.NOT_DELETED).orderByDesc(Tenant::getCreatedTime));
+            LambdaQueryWrapper<Tenant> tenantQueryWrapper = Wrappers.<Tenant>lambdaQuery().eq(Tenant::getIsDelete, UpmsConstant.NOT_DELETED)
+                    .orderByDesc(Tenant::getCreatedTime);
+            if (StringUtils.isNotBlank(tenantName)) {
+                tenantQueryWrapper.like(Tenant::getTenantName,tenantName);
+            }
+            tenants = tenantService.list(tenantQueryWrapper);
         } else {
             List<UserTenant> userTenants = userTenantService.list(Wrappers.<UserTenant>lambdaQuery().eq(UserTenant::getUserId,SecurityUtil.getCurrentUser().getId()));
             if (userTenants==null || userTenants.isEmpty()){
                 return Result.ok(new ArrayList<>());
             }
             List<String> tenantIds = userTenants.stream().map(UserTenant::getTenantId).collect(Collectors.toList());
-            tenants = tenantService.list(Wrappers.<Tenant>lambdaQuery()
-                    .eq(Tenant::getIsDelete, UpmsConstant.NOT_DELETED)
-                    .in(Tenant::getId, tenantIds).orderByDesc(Tenant::getCreatedTime));
+            LambdaQueryWrapper<Tenant> tenantQueryWrapper = Wrappers.<Tenant>lambdaQuery().eq(Tenant::getIsDelete, UpmsConstant.NOT_DELETED)
+                    .in(Tenant::getId, tenantIds).orderByDesc(Tenant::getCreatedTime);
+            if (StringUtils.isNotBlank(tenantName)) {
+                tenantQueryWrapper.like(Tenant::getTenantName,tenantName);
+            }
+            tenants = tenantService.list(tenantQueryWrapper);
         }
         return Result.ok(tenants);
     }
