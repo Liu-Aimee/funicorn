@@ -13,4 +13,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface RouteConfigService extends IService<RouteConfig> {
 
+    /**
+     * 重载路由
+     * @param routeId 路由id
+     * */
+    void reloadRoute(String routeId);
+
+    /**
+     * 卸载路由
+     * @param routeId 路由id
+     * */
+    void uninstallRoute(String routeId);
 }

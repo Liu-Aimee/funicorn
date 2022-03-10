@@ -89,6 +89,26 @@ public enum SystemErrorCode {
      * 绑定了字典项，不允许删除
      * */
     ROUTE_FILTER_TYPE_IS_EXISTS(-316,"断言类型已存在"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_RELOAD_FAILED(-317,"路由转发代理加载失败"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_UNINSTALL_FAILED(-318,"路由转发代理卸载失败"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_APP_IS_EXISTS(-319,"应用标识已存在"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_URI_IS_EXISTS(-319,"转发地址已存在"),
             ;
 
     private final int status;

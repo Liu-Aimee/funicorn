@@ -50,22 +50,11 @@ public class RouteConfig extends BaseModel implements Serializable{
   private String uri;
 
   /**
-   * 断言规则
+   * 当前状态 默认0
+   * 0未启用 1已启用
    */
-  @TableField(value = "predicates")
-  private String predicates;
-
-  /**
-   * 过滤规则
-   */
-  @TableField(value = "filters")
-  private String filters;
-
-  /**
-   * 顺序
-   */
-  @TableField(value = "`order`")
-  private String order;
+  @TableField(value = "status")
+  private String status;
 
   /**
    * 租户id

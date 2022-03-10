@@ -33,6 +33,10 @@
         </dependency>-->
         <dependency>
             <groupId>com.FUnicorn</groupId>
+            <artifactId>basic-gateway-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.FUnicorn</groupId>
             <artifactId>basic-common-redis</artifactId>
         </dependency>
         <dependency>

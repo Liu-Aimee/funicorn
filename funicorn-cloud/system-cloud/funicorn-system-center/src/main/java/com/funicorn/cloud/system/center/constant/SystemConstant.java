@@ -23,4 +23,7 @@ public class SystemConstant {
     public static final Integer TENANT_USER_NORMAL = 0;
     /** 租户管理员类别 */
     public static final Integer TENANT_USER_ADMIN = 1;
+
+    public static final String ROUTE_STATUS_ON = "1";
+    public static final String ROUTE_STATUS_OFF = "0";
 }

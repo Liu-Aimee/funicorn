@@ -70,6 +70,11 @@
         <dependencies>
             <dependency>
                 <groupId>com.FUnicorn</groupId>
+                <artifactId>basic-gateway-api</artifactId>
+                <version>${funicorn.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.FUnicorn</groupId>
                 <artifactId>basic-common-mqtt</artifactId>
                 <version>${funicorn.common.version}</version>
             </dependency>
