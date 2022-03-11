@@ -93,12 +93,12 @@ public enum SystemErrorCode {
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_RELOAD_FAILED(-317,"路由转发代理加载失败"),
+    ROUTE_RELOAD_FAILED(-317,"加载失败[%s]"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_UNINSTALL_FAILED(-318,"路由转发代理卸载失败"),
+    ROUTE_UNINSTALL_FAILED(-318,"卸载失败"),
 
     /**
      * 绑定了字典项，不允许删除

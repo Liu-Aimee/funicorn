@@ -49,23 +49,11 @@ public class RouteConfig extends BaseModel {
     private String uri;
 
     /**
-     * 转发规则
-     * */
-    @NotBlank(message = "转发规则",groups = Insert.class)
-    @TableField(value="predicates")
-    private String predicates;
-
-    /**
-     * 过滤器规则
-     * */
-    @TableField(value="filters")
-    private String filters;
-
-    /**
-     * 执行等级 默认0
-     * */
-    @TableField(value="`order`")
-    private Integer order;
+     * 当前状态 默认0
+     * 0未启用 1已启用
+     */
+    @TableField(value = "status")
+    private String status;
 
     /**
      * 删除状态，0：未删，1：已删

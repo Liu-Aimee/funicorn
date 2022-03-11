@@ -23,7 +23,7 @@ public class RouteController {
      * @param routeId 路由id
      * @return Result
      * */
-    @PatchMapping("/reload/{routeId}")
+    @PutMapping("/reload/{routeId}")
     public Result<?> reloadRoute(@PathVariable("routeId") String routeId){
         routeConfigService.reloadRoute(routeId);
         return Result.ok("重载成功");

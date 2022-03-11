@@ -3,12 +3,15 @@ package com.funicorn.basic.cloud.gateway.config;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.funicorn.basic.cloud.gateway.constant.GatewayConstant;
+import com.funicorn.basic.cloud.gateway.entity.DictItem;
 import com.funicorn.basic.cloud.gateway.entity.RouteConfig;
 import com.funicorn.basic.cloud.gateway.entity.RouteFilter;
 import com.funicorn.basic.cloud.gateway.entity.RoutePredicate;
+import com.funicorn.basic.cloud.gateway.service.DictItemService;
 import com.funicorn.basic.cloud.gateway.service.RouteConfigService;
 import com.funicorn.basic.cloud.gateway.service.RouteFilterService;
 import com.funicorn.basic.cloud.gateway.service.RoutePredicateService;
+import com.funicorn.basic.common.base.util.JsonUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -55,6 +58,8 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
     private RoutePredicateService routePredicateService;
     @Resource
     private RouteFilterService routeFilterService;
+    @Resource
+    private DictItemService dictItemService;
 
     @SneakyThrows
     @Override
@@ -73,7 +78,8 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
     public void loadRoute(){
         redisTemplate.delete(GatewayConstant.GATEWAY_ROUTES);
 
-        List<RouteConfig> routeConfigs = routeConfigService.list(Wrappers.<RouteConfig>query().lambda().eq(RouteConfig::getIsDelete,"0"));
+        List<RouteConfig> routeConfigs = routeConfigService.list(Wrappers.<RouteConfig>query().lambda()
+                .eq(RouteConfig::getIsDelete,"0").eq(RouteConfig::getStatus,GatewayConstant.ROUTE_STATUS_ON));
         routeConfigs.forEach(routeConfig -> {
             RouteDefinition definition = initDefinition(routeConfig);
             if (definition==null){
@@ -109,6 +115,7 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
     /**
     * 数据转换对象 RouteDefinition
     * */
+    @SuppressWarnings("unchecked")
     private RouteDefinition initDefinition(RouteConfig routeConfig){
         RouteDefinition definition = new RouteDefinition();
         URI uri;
@@ -149,22 +156,24 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
 
         //spring gateway会根据名称找对应的FilterFactory
         List<FilterDefinition> filterDefinitions = new ArrayList<>();
-        int i=0;
         for (RouteFilter routeFilter : routeFilters) {
+            List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery().eq(DictItem::getDictType,routeFilter.getType()));
+            if (dictItems==null || dictItems.isEmpty()) {
+                continue;
+            }
             FilterDefinition filterDefinition = new FilterDefinition();
             filterDefinition.setName(routeFilter.getType());
-            Map<String, String> filterParams = new HashMap<>(8);
-            filterParams.put("_genkey_" + i, routeFilter.getValue());
+            Map<String, String> argMap = JsonUtil.json2Object(routeFilter.getValue(),Map.class);
+            Map<String, String> filterParams = new HashMap<>(4);
+            dictItems.forEach(dictItem -> filterParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
             filterDefinition.setArgs(filterParams);
             filterDefinitions.add(filterDefinition);
-            i++;
         }
 
         definition.setId(routeConfig.getAppId());
         definition.setUri(uri);
         definition.setPredicates(predicateDefinitions);
         definition.setFilters(filterDefinitions);
-        definition.setOrder(routeConfig.getOrder()==null ? 0 : routeConfig.getOrder());
         return definition;
     }
 }

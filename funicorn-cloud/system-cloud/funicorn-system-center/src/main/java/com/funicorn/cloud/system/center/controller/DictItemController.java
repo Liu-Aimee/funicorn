@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.base.util.JsonUtil;
 import com.funicorn.basic.common.base.valid.Insert;
+import com.funicorn.basic.common.base.valid.Query;
 import com.funicorn.basic.common.base.valid.Update;
 import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.system.api.dto.DictItemQueryDTO;
@@ -43,7 +44,7 @@ public class DictItemController {
      * @return Result
      * */
     @GetMapping("/list")
-    public Result<List<DictItemVO>> list(DictItemQueryDTO dictItemQueryDTO){
+    public Result<List<DictItemVO>> list(@Validated(Query.class) DictItemQueryDTO dictItemQueryDTO){
         LambdaQueryWrapper<DictItem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DictItem::getIsDelete, SystemConstant.NOT_DELETED);
         if (StringUtils.isNotBlank(dictItemQueryDTO.getDictType())){

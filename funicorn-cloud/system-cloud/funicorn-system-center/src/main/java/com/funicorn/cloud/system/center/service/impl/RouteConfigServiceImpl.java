@@ -37,7 +37,7 @@ public class RouteConfigServiceImpl extends ServiceImpl<RouteConfigMapper, Route
         }
         Result<?> result = gatewayService.reloadRoute(routeId);
         if (result==null || !result.isSuccess()) {
-            throw new SystemException(SystemErrorCode.ROUTE_RELOAD_FAILED);
+            throw new SystemException(SystemErrorCode.ROUTE_RELOAD_FAILED,result==null ? "未知错误" : result.getMessage());
         }
 
         RouteConfig updateRoute = new RouteConfig();

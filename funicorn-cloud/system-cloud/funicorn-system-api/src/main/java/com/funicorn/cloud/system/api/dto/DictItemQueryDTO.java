@@ -1,6 +1,9 @@
 package com.funicorn.cloud.system.api.dto;
 
+import com.funicorn.basic.common.base.valid.Query;
 import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @author Aimee
@@ -12,6 +15,7 @@ public class DictItemQueryDTO {
     /**
      * 字典类型
      * */
+    @NotBlank(message = "字典类型不能为空",groups = Query.class)
     private String dictType;
 
     /**

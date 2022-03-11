@@ -16,7 +16,17 @@ public enum GatewayErrorCode {
     /**
      * 转发规则已存在
      * */
-    PREDICATES_IS_EXISTS(-100,"转发规则已被占用"),
+    PREDICATES_IS_EXISTS(-101,"转发规则已被占用"),
+
+    /**
+     * 转发规则已存在
+     * */
+    ROUTE_IS_NOT_FOUND(-102,"路由未找到"),
+
+    /**
+     * 转发规则已存在
+     * */
+    PREDICATES_IS_NOT_FOUND(-103,"未配置断言"),
             ;
 
     private final int status;
