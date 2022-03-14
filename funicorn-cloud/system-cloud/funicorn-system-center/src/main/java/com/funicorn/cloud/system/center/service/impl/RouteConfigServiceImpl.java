@@ -43,7 +43,7 @@ public class RouteConfigServiceImpl extends ServiceImpl<RouteConfigMapper, Route
         RouteConfig updateRoute = new RouteConfig();
         updateRoute.setId(routeId);
         updateRoute.setStatus(SystemConstant.ROUTE_STATUS_ON);
-        updateById(routeConfig);
+        updateById(updateRoute);
     }
 
     @Override
