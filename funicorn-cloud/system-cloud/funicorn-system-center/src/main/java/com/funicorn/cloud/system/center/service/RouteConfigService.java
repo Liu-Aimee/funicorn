@@ -24,4 +24,10 @@ public interface RouteConfigService extends IService<RouteConfig> {
      * @param routeId 路由id
      * */
     void uninstallRoute(String routeId);
+
+    /**
+     * 卸载路由
+     * @param routeId 路由id
+     * */
+    void removeRoute(String routeId);
 }

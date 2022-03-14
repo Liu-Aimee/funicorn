@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.security.util.SecurityUtil;
+import com.funicorn.cloud.system.center.constant.SystemConstant;
 import com.funicorn.cloud.system.center.dto.RouteQueryPageDTO;
 import com.funicorn.cloud.system.center.entity.RouteConfig;
 import com.funicorn.cloud.system.center.exception.SystemErrorCode;
@@ -49,6 +50,7 @@ public class RouteConfigController {
         } else {
             queryWrapper.eq(RouteConfig::getTenantId,routeQueryPageDTO.getTenantId());
         }
+        queryWrapper.eq(RouteConfig::getIsDelete, SystemConstant.NOT_DELETED);
         return Result.ok(routeConfigService.page(new Page<>(routeQueryPageDTO.getCurrent(),routeQueryPageDTO.getSize()),queryWrapper));
     }
 
@@ -94,7 +96,7 @@ public class RouteConfigController {
     }
 
     /**
-     * 修改网关转发路由配置
+     * 装载网关转发路由配置
      * @param routeId 路由id
      * @return Result
      * */
@@ -105,7 +107,7 @@ public class RouteConfigController {
     }
 
     /**
-     * 修改网关转发路由配置
+     * 卸载网关转发路由配置
      * @param routeId 路由id
      * @return Result
      * */
@@ -113,6 +115,17 @@ public class RouteConfigController {
     public Result<?> uninstallRoute(@PathVariable("routeId") String routeId){
         routeConfigService.uninstallRoute(routeId);
         return Result.ok("卸载成功");
+    }
+
+    /**
+     * 删除网关转发路由配置
+     * @param routeId 路由id
+     * @return Result
+     * */
+    @DeleteMapping("/remove/{routeId}")
+    public Result<?> removeRoute(@PathVariable("routeId") String routeId){
+        routeConfigService.removeRoute(routeId);
+        return Result.ok("已删除");
     }
 }
 

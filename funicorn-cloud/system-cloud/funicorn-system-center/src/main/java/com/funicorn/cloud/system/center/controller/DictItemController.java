@@ -48,7 +48,7 @@ public class DictItemController {
         LambdaQueryWrapper<DictItem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DictItem::getIsDelete, SystemConstant.NOT_DELETED);
         if (StringUtils.isNotBlank(dictItemQueryDTO.getDictType())){
-            queryWrapper.like(DictItem::getDictType,dictItemQueryDTO.getDictType());
+            queryWrapper.eq(DictItem::getDictType,dictItemQueryDTO.getDictType());
         }
         if (StringUtils.isNotBlank(dictItemQueryDTO.getDictValue())){
             queryWrapper.like(DictItem::getDictValue,dictItemQueryDTO.getDictValue());

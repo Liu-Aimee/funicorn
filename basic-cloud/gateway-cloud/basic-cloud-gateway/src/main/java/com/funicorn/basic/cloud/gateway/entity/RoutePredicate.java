@@ -48,4 +48,10 @@ public class RoutePredicate extends BaseModel implements Serializable{
    */
   @TableField(value = "value")
   private String value;
+
+  /**
+   * 启用状态 0未启用 1已启用 默认1
+   */
+  @TableField(value = "status")
+  private String status;
 }

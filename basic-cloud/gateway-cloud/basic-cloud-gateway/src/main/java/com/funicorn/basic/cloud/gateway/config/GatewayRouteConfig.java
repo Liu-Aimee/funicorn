@@ -133,7 +133,8 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
             uri = UriComponentsBuilder.fromUriString("lb://"+routeConfig.getUri()).build().toUri();
         }
 
-        List<RoutePredicate> routePredicates = routePredicateService.list(Wrappers.<RoutePredicate>lambdaQuery().eq(RoutePredicate::getRouteId,routeConfig.getId()));
+        List<RoutePredicate> routePredicates = routePredicateService.list(Wrappers.<RoutePredicate>lambdaQuery()
+                .eq(RoutePredicate::getRouteId,routeConfig.getId()).eq(RoutePredicate::getStatus,GatewayConstant.ROUTE_STATUS_ON));
         if (routePredicates==null || routePredicates.isEmpty()) {
             return null;
         }
@@ -141,11 +142,17 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         //spring gateway会根据名称找对应的PredicateFactory
         List<PredicateDefinition> predicateDefinitions = new ArrayList<>();
         for (RoutePredicate routePredicate : routePredicates) {
+            List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
+                    .eq(DictItem::getDictType,routePredicate.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
+            if (dictItems==null || dictItems.isEmpty()) {
+                continue;
+            }
             PredicateDefinition predicateDefinition = new PredicateDefinition();
             predicateDefinition.setName(routePredicate.getType());
-            Map<String, String> pattern = new HashMap<>(16);
-            pattern.put("pattern", routePredicate.getValue());
-            predicateDefinition.setArgs(pattern);
+            Map<String, String> argMap = JsonUtil.json2Object(routePredicate.getValue(),Map.class);
+            Map<String, String> predicateParams = new HashMap<>(4);
+            dictItems.forEach(dictItem -> predicateParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
+            predicateDefinition.setArgs(predicateParams);
             predicateDefinitions.add(predicateDefinition);
         }
 
@@ -157,7 +164,8 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         //spring gateway会根据名称找对应的FilterFactory
         List<FilterDefinition> filterDefinitions = new ArrayList<>();
         for (RouteFilter routeFilter : routeFilters) {
-            List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery().eq(DictItem::getDictType,routeFilter.getType()));
+            List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
+                    .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
             if (dictItems==null || dictItems.isEmpty()) {
                 continue;
             }

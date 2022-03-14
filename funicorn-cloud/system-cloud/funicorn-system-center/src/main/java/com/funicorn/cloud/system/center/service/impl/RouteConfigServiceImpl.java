@@ -62,4 +62,20 @@ public class RouteConfigServiceImpl extends ServiceImpl<RouteConfigMapper, Route
         updateRoute.setStatus(SystemConstant.ROUTE_STATUS_OFF);
         updateById(routeConfig);
     }
+
+    @Override
+    public void removeRoute(String routeId) {
+        RouteConfig routeConfig = getById(routeId);
+        if (routeConfig==null) {
+            return;
+        }
+        RouteConfig updateRoute = new RouteConfig();
+        updateRoute.setId(routeId);
+        updateRoute.setIsDelete(SystemConstant.IS_DELETED);
+        updateById(updateRoute);
+        //如果是启用状态，需要卸载
+        if (SystemConstant.ROUTE_STATUS_ON.equals(routeConfig.getStatus())) {
+            uninstallRoute(routeId);
+        }
+    }
 }

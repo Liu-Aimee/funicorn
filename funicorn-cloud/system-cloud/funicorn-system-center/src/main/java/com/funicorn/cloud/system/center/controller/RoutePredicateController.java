@@ -71,6 +71,17 @@ public class RoutePredicateController {
     }
 
     /**
+     * 修改断言启用状态
+     * @param predicateId 入参
+     * @return Result
+     * */
+    @PutMapping("/changeStatus/{predicateId}")
+    public Result<?> changeStatus(@PathVariable String predicateId){
+        routePredicateService.changeStatus(predicateId);
+        return Result.ok();
+    }
+
+    /**
      * 删除断言
      * @param id 断言id
      * @return Result
