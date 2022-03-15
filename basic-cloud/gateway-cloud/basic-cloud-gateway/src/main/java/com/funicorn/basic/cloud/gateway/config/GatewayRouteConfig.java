@@ -159,7 +159,7 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
 
         //过滤器
         List<RouteFilter> routeFilters = routeFilterService.list(Wrappers.<RouteFilter>lambdaQuery()
-                .eq(RouteFilter::getRouteId,routeConfig.getId()).eq(RouteFilter::getStatus,GatewayConstant.ROUTE_STATUS_ON));;
+                .eq(RouteFilter::getRouteId,routeConfig.getId()).eq(RouteFilter::getStatus,GatewayConstant.ROUTE_STATUS_ON));
         if (routeFilters!=null && !routeFilters.isEmpty()) {
             //spring gateway会根据名称找对应的FilterFactory
             List<FilterDefinition> filterDefinitions = new ArrayList<>();
