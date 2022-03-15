@@ -133,12 +133,12 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
             uri = UriComponentsBuilder.fromUriString("lb://"+routeConfig.getUri()).build().toUri();
         }
 
+        //断言
         List<RoutePredicate> routePredicates = routePredicateService.list(Wrappers.<RoutePredicate>lambdaQuery()
                 .eq(RoutePredicate::getRouteId,routeConfig.getId()).eq(RoutePredicate::getStatus,GatewayConstant.ROUTE_STATUS_ON));
         if (routePredicates==null || routePredicates.isEmpty()) {
             return null;
         }
-
         //spring gateway会根据名称找对应的PredicateFactory
         List<PredicateDefinition> predicateDefinitions = new ArrayList<>();
         for (RoutePredicate routePredicate : routePredicates) {
@@ -155,33 +155,33 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
             predicateDefinition.setArgs(predicateParams);
             predicateDefinitions.add(predicateDefinition);
         }
+        definition.setPredicates(predicateDefinitions);
 
-        List<RouteFilter> routeFilters = routeFilterService.list(Wrappers.<RouteFilter>lambdaQuery().eq(RouteFilter::getRouteId,routeConfig.getId()));
-        if (routeFilters==null || routeFilters.isEmpty()) {
-            return null;
-        }
-
-        //spring gateway会根据名称找对应的FilterFactory
-        List<FilterDefinition> filterDefinitions = new ArrayList<>();
-        for (RouteFilter routeFilter : routeFilters) {
-            List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
-                    .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
-            if (dictItems==null || dictItems.isEmpty()) {
-                continue;
+        //过滤器
+        List<RouteFilter> routeFilters = routeFilterService.list(Wrappers.<RouteFilter>lambdaQuery()
+                .eq(RouteFilter::getRouteId,routeConfig.getId()).eq(RouteFilter::getStatus,GatewayConstant.ROUTE_STATUS_ON));;
+        if (routeFilters!=null && !routeFilters.isEmpty()) {
+            //spring gateway会根据名称找对应的FilterFactory
+            List<FilterDefinition> filterDefinitions = new ArrayList<>();
+            for (RouteFilter routeFilter : routeFilters) {
+                List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
+                        .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
+                if (dictItems==null || dictItems.isEmpty()) {
+                    continue;
+                }
+                FilterDefinition filterDefinition = new FilterDefinition();
+                filterDefinition.setName(routeFilter.getType());
+                Map<String, String> argMap = JsonUtil.json2Object(routeFilter.getValue(),Map.class);
+                Map<String, String> filterParams = new HashMap<>(4);
+                dictItems.forEach(dictItem -> filterParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
+                filterDefinition.setArgs(filterParams);
+                filterDefinitions.add(filterDefinition);
             }
-            FilterDefinition filterDefinition = new FilterDefinition();
-            filterDefinition.setName(routeFilter.getType());
-            Map<String, String> argMap = JsonUtil.json2Object(routeFilter.getValue(),Map.class);
-            Map<String, String> filterParams = new HashMap<>(4);
-            dictItems.forEach(dictItem -> filterParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
-            filterDefinition.setArgs(filterParams);
-            filterDefinitions.add(filterDefinition);
+            definition.setFilters(filterDefinitions);
         }
 
         definition.setId(routeConfig.getAppId());
         definition.setUri(uri);
-        definition.setPredicates(predicateDefinitions);
-        definition.setFilters(filterDefinitions);
         return definition;
     }
 }
