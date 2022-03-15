@@ -71,6 +71,17 @@ public class RouteFilterController {
     }
 
     /**
+     * 修改断言启用状态
+     * @param filterId 入参
+     * @return Result
+     * */
+    @PutMapping("/changeStatus/{filterId}")
+    public Result<?> changeStatus(@PathVariable String filterId){
+        routeFilterService.changeStatus(filterId);
+        return Result.ok();
+    }
+
+    /**
      * 删除过滤器
      * @param id 断言id
      * @return Result

@@ -1,7 +1,7 @@
 package com.funicorn.cloud.system.center.service;
 
-import com.funicorn.cloud.system.center.entity.RouteFilter;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.funicorn.cloud.system.center.entity.RouteFilter;
 
 /**
  * <p>
@@ -13,4 +13,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface RouteFilterService extends IService<RouteFilter> {
 
+    /**
+     * 修改启用状态
+     * @param filterId 过滤器id
+     * */
+    void changeStatus(String filterId);
 }
