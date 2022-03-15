@@ -151,7 +151,17 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
             predicateDefinition.setName(routePredicate.getType());
             Map<String, String> argMap = JsonUtil.json2Object(routePredicate.getValue(),Map.class);
             Map<String, String> predicateParams = new HashMap<>(4);
-            dictItems.forEach(dictItem -> predicateParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
+            dictItems.forEach(dictItem -> {
+                if (GatewayConstant.PREDICATE_SUPPORT_MORE_DATA_TYPE.contains(routePredicate.getType())
+                        && argMap.get(dictItem.getDictValue()).contains(",")) {
+                    String[] values = argMap.get(dictItem.getDictValue()).split(",");
+                    for (int i = 0; i < values.length; i++) {
+                        predicateParams.put(dictItem.getDictValue() + i, values[i]);
+                    }
+                } else {
+                    predicateParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue()));
+                }
+            });
             predicateDefinition.setArgs(predicateParams);
             predicateDefinitions.add(predicateDefinition);
         }

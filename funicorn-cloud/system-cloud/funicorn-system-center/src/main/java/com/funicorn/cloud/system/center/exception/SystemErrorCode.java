@@ -83,32 +83,37 @@ public enum SystemErrorCode {
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_PREDICATE_TYPE_IS_EXISTS(-315,"断言类型已存在"),
+    ROUTE_PREDICATE_TYPE_IS_EXISTS(-315,"断言配置已存在"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_FILTER_TYPE_IS_EXISTS(-316,"断言类型已存在"),
+    ROUTE_PREDICATE_VALUE_IS_INVALID(-316,"断言配置参数不正确"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_RELOAD_FAILED(-317,"加载失败[%s]"),
+    ROUTE_FILTER_TYPE_IS_EXISTS(-317,"过滤器配置已存在"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_UNINSTALL_FAILED(-318,"卸载失败"),
+    ROUTE_RELOAD_FAILED(-318,"加载失败[%s]"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_APP_IS_EXISTS(-319,"应用标识已存在"),
+    ROUTE_UNINSTALL_FAILED(-319,"卸载失败"),
 
     /**
      * 绑定了字典项，不允许删除
      * */
-    ROUTE_URI_IS_EXISTS(-319,"转发地址已存在"),
+    ROUTE_APP_IS_EXISTS(-320,"应用标识已存在"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    ROUTE_URI_IS_EXISTS(-321,"转发地址已存在"),
             ;
 
     private final int status;

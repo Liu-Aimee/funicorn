@@ -48,10 +48,13 @@ public class RoutePredicateController {
     @PostMapping("/add")
     public Result<?> add(@RequestBody RoutePredicate routePredicate){
         int count = routePredicateService.count(Wrappers.<RoutePredicate>lambdaQuery()
-                .eq(RoutePredicate::getRouteId,routePredicate.getRouteId()).eq(RoutePredicate::getType,routePredicate.getType()));
+                .eq(RoutePredicate::getRouteId,routePredicate.getRouteId())
+                .eq(RoutePredicate::getType,routePredicate.getType()));
         if (count>0) {
             throw new SystemException(SystemErrorCode.ROUTE_PREDICATE_TYPE_IS_EXISTS);
         }
+
+        //TODO 需要加个validator
         routePredicateService.save(routePredicate);
         return Result.ok();
     }
@@ -63,6 +66,7 @@ public class RoutePredicateController {
      * */
     @PostMapping("/update")
     public Result<?> update(@RequestBody PredicateDTO predicateDTO){
+        //TODO 需要加个validator
         RoutePredicate routePredicate = new RoutePredicate();
         routePredicate.setId(predicateDTO.getId());
         routePredicate.setValue(predicateDTO.getValue());

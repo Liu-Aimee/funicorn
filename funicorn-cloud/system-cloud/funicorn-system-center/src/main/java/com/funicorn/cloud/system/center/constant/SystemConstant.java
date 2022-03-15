@@ -1,5 +1,8 @@
 package com.funicorn.cloud.system.center.constant;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Aimee
  * @since 2021/10/15 9:59
@@ -26,4 +29,11 @@ public class SystemConstant {
 
     public static final String ROUTE_STATUS_ON = "1";
     public static final String ROUTE_STATUS_OFF = "0";
+
+    /**允许有多个值的断言类型*/
+    public static final List<String> PREDICATE_SUPPORT_MORE_DATA_TYPE = Arrays.asList("Path","Method");
+
+    /**允许有多个值的断言类型*/
+    public static final String PREDICATE_TYPE_METHOD = "Method";
+
 }
