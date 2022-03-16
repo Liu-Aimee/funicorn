@@ -17,7 +17,7 @@ public class RouteValidator {
      * @param predicate predicate
      * */
     public static void validatePredicate(Predicate predicate) {
-        Assert.isTrue(RouteConstant.PREDICATE_SUPPORT_TYPE.contains(predicate.getType()), "type:[" + predicate.getType() + "] not supported");
+        Assert.isTrue(RouteConstant.PREDICATE_SUPPORT_TYPE.contains(predicate.getType()), "不支持的断言类型[" + predicate.getType() + "]");
         PredicateType.valueOf(predicate.getType()).validate(predicate);
     }
 }
