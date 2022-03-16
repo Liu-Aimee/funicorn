@@ -25,5 +25,5 @@ public class GatewayConstant {
     public static final String NOT_DELETED = "0";
 
     /**允许有多个值的断言类型*/
-    public static final List<String> PREDICATE_SUPPORT_MORE_DATA_TYPE = Arrays.asList("Path","Method");
+    public static final List<String> PREDICATE_SUPPORT_MORE_DATA_TYPE = Arrays.asList("Path","Method","Host","RemoteAddr");
 }
