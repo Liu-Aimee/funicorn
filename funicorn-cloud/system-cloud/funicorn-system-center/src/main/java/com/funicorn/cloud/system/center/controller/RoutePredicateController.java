@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.funicorn.basic.common.base.model.Result;
+import com.funicorn.basic.common.base.util.JsonUtil;
+import com.funicorn.basic.gateway.api.model.Predicate;
+import com.funicorn.basic.gateway.api.util.RouteValidator;
 import com.funicorn.cloud.system.center.dto.PredicateDTO;
 import com.funicorn.cloud.system.center.dto.PredicateQueryPageDTO;
 import com.funicorn.cloud.system.center.entity.RoutePredicate;
@@ -54,7 +57,11 @@ public class RoutePredicateController {
             throw new SystemException(SystemErrorCode.ROUTE_PREDICATE_TYPE_IS_EXISTS);
         }
 
-        //TODO 需要加个validator
+        try {
+            RouteValidator.validatePredicate(JsonUtil.object2Object(routePredicate, Predicate.class));
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
         routePredicateService.save(routePredicate);
         return Result.ok();
     }
@@ -66,11 +73,24 @@ public class RoutePredicateController {
      * */
     @PostMapping("/update")
     public Result<?> update(@RequestBody PredicateDTO predicateDTO){
-        //TODO 需要加个validator
-        RoutePredicate routePredicate = new RoutePredicate();
-        routePredicate.setId(predicateDTO.getId());
-        routePredicate.setValue(predicateDTO.getValue());
-        routePredicateService.updateById(routePredicate);
+        int count = routePredicateService.count(Wrappers.<RoutePredicate>lambdaQuery()
+                .eq(RoutePredicate::getRouteId,predicateDTO.getRouteId())
+                .eq(RoutePredicate::getType,predicateDTO.getType())
+                .ne(RoutePredicate::getId,predicateDTO.getId()));
+        if (count>0) {
+            throw new SystemException(SystemErrorCode.ROUTE_PREDICATE_TYPE_IS_EXISTS);
+        }
+
+        RoutePredicate updatePredicate = new RoutePredicate();
+        updatePredicate.setId(predicateDTO.getId());
+        updatePredicate.setType(predicateDTO.getType());
+        updatePredicate.setValue(predicateDTO.getValue());
+        try {
+            RouteValidator.validatePredicate(JsonUtil.object2Object(updatePredicate, Predicate.class));
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+        routePredicateService.updateById(updatePredicate);
         return Result.ok();
     }
 

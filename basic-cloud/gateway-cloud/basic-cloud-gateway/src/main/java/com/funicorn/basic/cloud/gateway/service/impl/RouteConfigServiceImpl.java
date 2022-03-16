@@ -10,10 +10,14 @@ import com.funicorn.basic.cloud.gateway.exception.GatewayException;
 import com.funicorn.basic.cloud.gateway.mapper.RouteConfigMapper;
 import com.funicorn.basic.cloud.gateway.service.RouteConfigService;
 import com.funicorn.basic.cloud.gateway.service.RoutePredicateService;
+import com.funicorn.basic.common.base.util.JsonUtil;
+import com.funicorn.basic.gateway.api.model.Predicate;
+import com.funicorn.basic.gateway.api.util.RouteValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 路由配置信息表业务实现类
@@ -37,11 +41,12 @@ public class RouteConfigServiceImpl extends ServiceImpl<RouteConfigMapper, Route
             throw new GatewayException(GatewayErrorCode.ROUTE_IS_NOT_FOUND);
         }
 
-        int count = routePredicateService.count(Wrappers.<RoutePredicate>lambdaQuery().eq(RoutePredicate::getRouteId,routeId));
-        if (count<=0) {
+        List<RoutePredicate> predicates = routePredicateService.list(Wrappers.<RoutePredicate>lambdaQuery().eq(RoutePredicate::getRouteId,routeId));
+        if (predicates==null || predicates.isEmpty()) {
             throw new GatewayException(GatewayErrorCode.PREDICATES_IS_NOT_FOUND);
         }
-
+        //断言校验
+        predicates.forEach(predicate -> RouteValidator.validatePredicate(JsonUtil.object2Object(predicate, Predicate.class)));
         gatewayRouteConfig.updateRoute(routeConfig);
     }
 

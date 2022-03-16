@@ -15,6 +15,16 @@ public class PredicateDTO {
     private String id;
 
     /**
+     * 路由id
+     * */
+    private String routeId;
+
+    /**
+     * 类型
+     * */
+    private String type;
+
+    /**
      * 修改值
      * */
     private String value;

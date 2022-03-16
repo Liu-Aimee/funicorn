@@ -114,6 +114,7 @@ public enum SystemErrorCode {
      * 绑定了字典项，不允许删除
      * */
     ROUTE_URI_IS_EXISTS(-321,"转发地址已存在"),
+
             ;
 
     private final int status;

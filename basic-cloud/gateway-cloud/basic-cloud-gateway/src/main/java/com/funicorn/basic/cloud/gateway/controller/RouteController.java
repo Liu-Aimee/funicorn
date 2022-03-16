@@ -2,6 +2,7 @@ package com.funicorn.basic.cloud.gateway.controller;
 
 import com.funicorn.basic.cloud.gateway.service.RouteConfigService;
 import com.funicorn.basic.common.base.model.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -11,6 +12,7 @@ import javax.annotation.Resource;
  * @author Aimee
  * @since 2021/10/27 13:12
  */
+@Slf4j
 @RestController
 @RequestMapping("/Route")
 public class RouteController {
@@ -25,7 +27,12 @@ public class RouteController {
      * */
     @PutMapping("/reload/{routeId}")
     public Result<?> reloadRoute(@PathVariable("routeId") String routeId){
-        routeConfigService.reloadRoute(routeId);
+        try {
+            routeConfigService.reloadRoute(routeId);
+        } catch (Exception e) {
+            log.error("路由加载失败",e);
+            return Result.error(e.getMessage());
+        }
         return Result.ok("重载成功");
     }
 
