@@ -174,17 +174,20 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
             //spring gateway会根据名称找对应的FilterFactory
             List<FilterDefinition> filterDefinitions = new ArrayList<>();
             for (RouteFilter routeFilter : routeFilters) {
-                List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
-                        .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
-                if (dictItems==null || dictItems.isEmpty()) {
-                    continue;
-                }
                 FilterDefinition filterDefinition = new FilterDefinition();
                 filterDefinition.setName(routeFilter.getType());
-                Map<String, String> argMap = JsonUtil.json2Object(routeFilter.getValue(),Map.class);
-                Map<String, String> filterParams = new HashMap<>(4);
-                dictItems.forEach(dictItem -> filterParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
-                filterDefinition.setArgs(filterParams);
+                //过滤掉不需要设置参数的过滤器
+                if (!GatewayConstant.FILTER_NOT_HAS_ARGS_TYPES.contains(routeFilter.getType())){
+                    List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
+                            .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
+                    if (dictItems==null || dictItems.isEmpty()) {
+                        continue;
+                    }
+                    Map<String, String> argMap = JsonUtil.json2Object(routeFilter.getValue(),Map.class);
+                    Map<String, String> filterParams = new HashMap<>(4);
+                    dictItems.forEach(dictItem -> filterParams.put(dictItem.getDictValue(), argMap.get(dictItem.getDictValue())));
+                    filterDefinition.setArgs(filterParams);
+                }
                 filterDefinitions.add(filterDefinition);
             }
             definition.setFilters(filterDefinitions);

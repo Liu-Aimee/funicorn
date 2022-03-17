@@ -45,7 +45,7 @@ public class DictTypeController {
      * @return Result
      * */
     @GetMapping("/page")
-    public Result<IPage<DictType>> list(DictTypeQueryPageDTO dictTypeQueryPageDTO){
+    public Result<IPage<DictType>> page(DictTypeQueryPageDTO dictTypeQueryPageDTO){
         LambdaQueryWrapper<DictType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DictType::getIsDelete, SystemConstant.NOT_DELETED);
         queryWrapper.eq(DictType::getTenantId, SecurityUtil.getCurrentUser().getTenantId());

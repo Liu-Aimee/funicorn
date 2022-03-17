@@ -162,6 +162,16 @@ public enum PredicateType implements Validator<Predicate> {
     ;
 
     /**
+     * 判断是否存在枚举类
+     * @param type type
+     * @return boolean
+     * */
+    public static boolean hasType(String type) {
+        return Arrays.stream(PredicateType.values()).map(PredicateType::name).collect(Collectors.toList()).contains(type);
+    }
+
+
+    /**
      * normalCheck
      * @param valueMap valueMap
      * @param keys keys
