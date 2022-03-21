@@ -53,6 +53,7 @@ public class UploadFileController {
         queryWrapper.eq(UploadFile::getCreatedBy,currentUser.getUsername());
         queryWrapper.eq(UploadFile::getTenantId,currentUser.getTenantId());
         queryWrapper.eq(UploadFile::getIsDelete, SystemConstant.NOT_DELETED);
+        queryWrapper.eq(UploadFile::getTenantId, uploadFilePageDTO.getTenantId());
         if (StringUtils.isNotBlank(uploadFilePageDTO.getFileName())) {
             queryWrapper.like(UploadFile::getFileName,uploadFilePageDTO.getFileName());
         }
@@ -100,35 +101,31 @@ public class UploadFileController {
     /**
      * 单文件上传
      * @param file 文件流
-     * @param bucketName 桶名称 默认桶
+     * @param bucketName 桶名称
      * @param downFlag 是否允许其他人下载 默认false
-     * @param fileLevel 文件级别 private 私有 public 公共 默认private
      * @return Result
      * @throws Exception 异常
      * */
     @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<UploadFileData> upload(@RequestParam("file") MultipartFile file,
-                                         @RequestParam(required = false) String bucketName,
-                                         @RequestParam(required = false,defaultValue = "false") boolean downFlag,
-                                         @RequestParam(required = false,defaultValue = "public") String fileLevel) throws Exception {
-        return Result.ok(uploadFileService.upload(file,bucketName,downFlag,fileLevel));
+                                         @RequestParam String bucketName,
+                                         @RequestParam(required = false,defaultValue = "false") boolean downFlag) throws Exception {
+        return Result.ok(uploadFileService.upload(file,bucketName,downFlag));
     }
 
     /**
      * 多文件上传
      * @param files 文件流数组
-     * @param bucketName 桶名称前缀
+     * @param bucketName 桶名称
      * @param downFlag 是否允许其他人下载 默认false
-     * @param fileLevel 文件级别 private 私有 public 公共 默认private
      * @return Result
      * @throws Exception 异常
      * */
     @PostMapping(value = "/multiUpload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<List<UploadFileData>> multiUpload(@RequestParam("files") MultipartFile[] files,
                                                     @RequestParam String bucketName,
-                                                    @RequestParam(required = false,defaultValue = "false") boolean downFlag,
-                                                    @RequestParam(required = false,defaultValue = "public") String fileLevel) throws Exception {
-        return Result.ok(uploadFileService.multiUpload(files,bucketName,downFlag,fileLevel));
+                                                    @RequestParam(required = false,defaultValue = "false") boolean downFlag) throws Exception {
+        return Result.ok(uploadFileService.multiUpload(files,bucketName,downFlag));
     }
 
     /**

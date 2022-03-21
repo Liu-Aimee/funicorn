@@ -17,6 +17,6 @@ public class CodeGenUtil {
         generator.setProjectPath(System.getProperty("user.dir") + "/funicorn-cloud/system-cloud/funicorn-system-center");
         generator.setDriverClassName("com.mysql.cj.jdbc.Driver");
         generator.setPackageName("com.funicorn.cloud.system.center");
-        generator.generateCode("route_filter","route_predicate");
+        generator.generateCode("bucket_config");
     }
 }

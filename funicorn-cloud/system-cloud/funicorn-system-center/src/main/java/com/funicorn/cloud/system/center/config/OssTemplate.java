@@ -2,7 +2,9 @@
 package com.funicorn.cloud.system.center.config;
 
 import com.funicorn.basic.common.base.constant.BaseConstant;
-import com.funicorn.cloud.system.center.property.OssProperties;
+import com.funicorn.cloud.system.api.model.FileLevel;
+import com.funicorn.cloud.system.center.exception.SystemErrorCode;
+import com.funicorn.cloud.system.center.exception.SystemException;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.Bucket;
@@ -24,13 +26,10 @@ import java.util.concurrent.TimeUnit;
  * @author Aimee
  * @since 2021/09/30
  */
-@SuppressWarnings("unused")
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OssTemplate {
-
-	private final OssProperties ossProperties;
 
 	private final MinioClient minioClient;
 
@@ -39,13 +38,16 @@ public class OssTemplate {
 	 * prefix:public
 	 * prefix:private
 	 * @param bucketName bucket名称
+	 * @param level 权限级别
 	 * @throws Exception 异常
 	 */
-	public void createBucket(String bucketName) throws Exception {
+	public void createBucket(String bucketName,String level) throws Exception {
 		if (!bucketExists(bucketName)) {
 			MakeBucketArgs makeBucketArgs = MakeBucketArgs.builder().bucket(bucketName).build();
 			minioClient.makeBucket(makeBucketArgs);
-			initBucketPolicy(bucketName);
+			initBucketPolicy(bucketName,level);
+		} else {
+			throw new SystemException(SystemErrorCode.BUCKET_IS_EXISTS);
 		}
 	}
 
@@ -63,14 +65,15 @@ public class OssTemplate {
 	/**
 	 * 修改桶设置
 	 * @param bucketName 桶名称
+	 * @param level 权限级别
 	 * @throws Exception 异常
 	 * */
-	public void initBucketPolicy(String bucketName) throws Exception{
+	public void initBucketPolicy(String bucketName,String level) throws Exception{
 		if (!bucketExists(bucketName)) {
 			return;
 		}
-		String policy = minioClient.getBucketPolicy(GetBucketPolicyArgs.builder().bucket(bucketName).build());
-		String filename = "config/bucket_policy.json";
+		minioClient.getBucketPolicy(GetBucketPolicyArgs.builder().bucket(bucketName).build());
+		String filename = FileLevel.isPublic(level) ? "config/bucket_policy_public.json" : "config/bucket_policy_private.json";
 		ClassPathResource classPathResource = new ClassPathResource(filename);
 		String config = IOUtils.toString(classPathResource.getInputStream(), BaseConstant.CHARSET_UTF8).replaceAll("\\$\\{bucketName}",bucketName);
 		SetBucketPolicyArgs args = SetBucketPolicyArgs.builder().bucket(bucketName).config(config).build();

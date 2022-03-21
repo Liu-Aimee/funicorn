@@ -36,4 +36,10 @@ public class SystemConstant {
     /**允许有多个值的断言类型*/
     public static final String PREDICATE_TYPE_METHOD = "Method";
 
+    /**恢复状态*/
+    public static final String RECOVERY_YES = "1";
+    public static final String RECOVERY_NO = "0";
+
+
+
 }

@@ -6,26 +6,11 @@ import lombok.EqualsAndHashCode;
 
 /**
  * @author Aimee
- * @since 2021/11/8 16:54
+ * @since 2022/3/19 9:41
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UploadFilePageDTO extends PageDTO {
-    /**
-     * 文件名
-     */
-    private String fileName;
-
-
-    /**
-     * 文件名后缀名
-     */
-    private String suffix;
-
-    /**
-     * 桶名称
-     * */
-    private String bucketName;
+public class BucketQueryDTO extends PageDTO {
 
     /**
      * 租户id

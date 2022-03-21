@@ -22,23 +22,21 @@ public interface UploadFileService extends IService<UploadFile> {
      * 单文件上传
      * @param multipartFile 文件流
      * @param bucketName 桶名称
-     * @param fileLevel 文件级别
      * @param downFlag 是否允许其他人下载 默认false
      * @return UploadFileData
      * @throws Exception 异常
      * */
-    UploadFileData upload(MultipartFile multipartFile, String bucketName, boolean downFlag, String fileLevel) throws Exception;
+    UploadFileData upload(MultipartFile multipartFile, String bucketName, boolean downFlag) throws Exception;
 
     /**
      * 单文件上传
      * @param files 文件流数组
      * @param bucketName 桶名称
-     * @param fileLevel 文件级别
      * @param downFlag 是否允许其他人下载 默认false
      * @return UploadFileData
      * @throws Exception 异常
      * */
-    List<UploadFileData> multiUpload(MultipartFile[] files, String bucketName, boolean downFlag,String fileLevel) throws Exception;
+    List<UploadFileData> multiUpload(MultipartFile[] files, String bucketName, boolean downFlag) throws Exception;
 
     /**
      * 文件下载

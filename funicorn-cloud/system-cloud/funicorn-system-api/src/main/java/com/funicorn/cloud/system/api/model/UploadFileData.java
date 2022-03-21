@@ -39,11 +39,6 @@ public class UploadFileData implements Serializable {
     private String bucketName;
 
     /**
-     * 文件级别
-     * */
-    private String fileLevel;
-
-    /**
      * 访问链接
      **/
     private String url;

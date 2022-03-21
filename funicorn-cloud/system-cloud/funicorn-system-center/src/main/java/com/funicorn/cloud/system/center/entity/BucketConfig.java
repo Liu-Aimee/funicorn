@@ -9,51 +9,46 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
- * 文件上传信息
+ * 
  * </p>
  *
  * @author Aimee
- * @since 2021-11-08
+ * @since 2022-03-18
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("upload_file")
-public class UploadFile extends BaseModel implements Serializable{
+@TableName("bucket_config")
+public class BucketConfig extends BaseModel implements Serializable{
 
   private static final long serialVersionUID=1L;
 
   /**
-   * 文件id
+   * 桶id
    */
   @TableId(value = "id", type = IdType.ASSIGN_ID)
   private String id;
     
   /**
-   * 文件名
+   * 桶名
    */
-  @TableField(value = "file_name")
-  private String fileName;
+  @TableField(value = "name")
+  private String name;
 
   /**
-   * 文件名后缀名
+   * 权限  public公开/private私有 默认public
    */
-  @TableField(value = "suffix")
-  private String suffix;
+  @TableField(value = "level")
+  private String level;
 
   /**
-   * 文件大小 单位字节
+   * 桶内文件数量
    */
-  @TableField(value = "size")
-  private Long size;
-
-  /**
-   * 桶名称
-   * */
-  @TableField(value = "bucket_name")
-  private String bucketName;
+  @TableField(value = "count")
+  private Integer count;
 
   /**
    * 租户id
@@ -62,20 +57,20 @@ public class UploadFile extends BaseModel implements Serializable{
   private String tenantId;
 
   /**
-   * 是否提供下载
-   */
-  @TableField(value = "down_flag")
-  private Boolean downFlag;
-
-  /**
-   * 下载次数
-   */
-  @TableField(value = "down_count")
-  private Integer downCount;
-
-  /**
-   * 软删标识 0未删 1已删
+   * 是否删除 0 未删除 1已删除
    */
   @TableField(value = "is_delete")
   private String isDelete;
+
+  /**
+   * 删除日期
+   * */
+  @TableField(value = "delete_date")
+  private Date deleteDate;
+
+  /**
+   * 可恢复状态 1可恢复 0无法恢复
+   * */
+  @TableField(value = "recovery")
+  private String recovery;
 }

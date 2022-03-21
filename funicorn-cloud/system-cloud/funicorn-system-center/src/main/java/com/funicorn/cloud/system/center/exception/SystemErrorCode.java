@@ -47,9 +47,9 @@ public enum SystemErrorCode {
     FILE_SIZE_TOO_LARGE(-307,"文件过大，最大支持[%s]"),
 
     /**
-     * 非法的文件级别
+     * 非法的权限级别
      * */
-    FILE_LEVEL_IS_ILLEGAL(-308,"非法的文件级别[%s]"),
+    FILE_LEVEL_IS_ILLEGAL(-308,"非法的权限级别[%s]"),
 
     /**
      * 文件上传失败
@@ -114,6 +114,16 @@ public enum SystemErrorCode {
      * 绑定了字典项，不允许删除
      * */
     ROUTE_URI_IS_EXISTS(-321,"转发地址已存在"),
+
+    /**
+     * 绑定了字典项，不允许删除
+     * */
+    BUCKET_IS_EXISTS(-322,"桶名已被占用"),
+
+    /**
+     * 未找到桶名
+     * */
+    BUCKET_NOT_FOUND(-323,"未找到桶名"),
 
             ;
 

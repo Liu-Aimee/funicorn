@@ -1,5 +1,9 @@
 package com.funicorn.cloud.system.api.model;
 
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
 /**
  * 文件级别
  * @author Aimee
@@ -10,33 +14,29 @@ public enum FileLevel {
     /**
      * 私有的
      * */
-    PRIVATE("private"),
+    PRIVATE,
 
     /**
      * 公共的
      * */
-    PUBLIC("public"),
+    PUBLIC,
     ;
 
-    private final String value;
-
-    FileLevel(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return this.value;
+    /**
+     * 判断是否存在枚举类
+     * @param type type
+     * @return boolean
+     * */
+    public static boolean hasType(String type) {
+        return Arrays.stream(FileLevel.values()).map(FileLevel::name).collect(Collectors.toList()).contains(type.toUpperCase(Locale.ROOT));
     }
 
     /**
-     * 判断值是否存在枚举类中
+     * 判断是否是public
+     * @param type type
+     * @return boolean
      * */
-    public static boolean containsLevel(String value) {
-        for (FileLevel fileLevel:FileLevel.values()) {
-            if (fileLevel.value.equals(value)) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean isPublic(String type) {
+        return hasType(type.toUpperCase(Locale.ROOT)) && FileLevel.PUBLIC.name().equals(type.toUpperCase(Locale.ROOT));
     }
 }
