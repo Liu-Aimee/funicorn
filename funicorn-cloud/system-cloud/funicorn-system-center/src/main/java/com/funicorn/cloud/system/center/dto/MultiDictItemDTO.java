@@ -20,6 +20,12 @@ public class MultiDictItemDTO {
     private String dictType;
 
     /**
+     * 租户id
+     * */
+    @NotEmpty(message = "租户id不能为空")
+    private String tenantId;
+
+    /**
      * 字典项数组
      * */
     @NotEmpty(message = "字典项数组不能为空")

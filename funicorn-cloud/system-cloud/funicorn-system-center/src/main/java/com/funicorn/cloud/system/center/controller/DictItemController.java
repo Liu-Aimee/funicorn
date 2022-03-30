@@ -47,6 +47,7 @@ public class DictItemController {
     public Result<List<DictItemVO>> list(@Validated(Query.class) DictItemQueryDTO dictItemQueryDTO){
         LambdaQueryWrapper<DictItem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DictItem::getIsDelete, SystemConstant.NOT_DELETED);
+        queryWrapper.eq(DictItem::getTenantId, dictItemQueryDTO.getTenantId());
         if (StringUtils.isNotBlank(dictItemQueryDTO.getDictType())){
             queryWrapper.eq(DictItem::getDictType,dictItemQueryDTO.getDictType());
         }
@@ -82,19 +83,18 @@ public class DictItemController {
      * @return Result
      * */
     @PostMapping("/save")
-    public Result<?> save(@RequestBody @Validated({Insert.class}) DictItemDTO dictItemDTO){
+    public Result<DictItem> save(@RequestBody @Validated({Insert.class}) DictItemDTO dictItemDTO){
         int count = dictItemService.count(Wrappers.<DictItem>lambdaQuery()
                 .eq(DictItem::getDictType,dictItemDTO.getDictType())
                 .eq(DictItem::getIsDelete,SystemConstant.NOT_DELETED)
-                .eq(DictItem::getTenantId, SecurityUtil.getCurrentUser().getTenantId())
-                .and(wrapper-> wrapper.eq(DictItem::getDictValue,dictItemDTO.getDictValue()).or().eq(DictItem::getDictLabel,dictItemDTO.getDictLabel())));
+                .eq(DictItem::getTenantId, dictItemDTO.getTenantId())
+                .eq(DictItem::getDictValue,dictItemDTO.getDictValue()));
         if (count>0) {
-            throw new SystemException(SystemErrorCode.DICT_LABEL_OR_VALUE_IS_EXISTS);
+            throw new SystemException(SystemErrorCode.DICT_TIME_VALUE_REPEAT,dictItemDTO.getDictValue());
         }
         DictItem dictItem = JsonUtil.object2Object(dictItemDTO,DictItem.class);
-        dictItem.setTenantId(SecurityUtil.getCurrentUser().getTenantId());
         dictItemService.save(dictItem);
-        return Result.ok("新增成功");
+        return Result.ok(dictItem,"新增成功");
     }
 
     /**

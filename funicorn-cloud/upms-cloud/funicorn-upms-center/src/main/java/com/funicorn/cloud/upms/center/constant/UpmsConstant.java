@@ -29,10 +29,10 @@ public class UpmsConstant {
     /** 已软删标识 */
     public static final String IS_DELETED = "1";
 
-    /** 可用 */
-    public static final Integer ENABLED = 0;
     /** 不可用 */
-    public static final Integer DISABLED = 1;
+    public static final Integer DISABLED = 0;
+    /** 可用 */
+    public static final Integer ENABLED = 1;
     /** 开通中 */
     public static final Integer APP_APPLYING = 2;
     /** 拒绝开通 */

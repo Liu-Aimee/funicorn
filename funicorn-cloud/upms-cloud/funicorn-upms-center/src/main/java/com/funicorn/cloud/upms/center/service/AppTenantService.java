@@ -5,7 +5,8 @@ import com.funicorn.cloud.upms.center.dto.AppTenantDTO;
 import com.funicorn.cloud.upms.center.dto.ApprovalAppDTO;
 import com.funicorn.cloud.upms.center.dto.TenantAppDTO;
 import com.funicorn.cloud.upms.center.entity.AppTenant;
-import com.funicorn.cloud.upms.center.vo.TenantBindVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -46,5 +47,5 @@ public interface AppTenantService extends IService<AppTenant> {
      * @param appId 应用id
      * @return TenantBindVO
      */
-    TenantBindVO bindTenantList(String appId);
+    List<AppTenant> bindTenantList(String appId);
 }

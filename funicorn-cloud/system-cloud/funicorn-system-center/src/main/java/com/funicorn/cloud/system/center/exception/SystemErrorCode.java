@@ -11,11 +11,11 @@ public enum SystemErrorCode {
     /**
      * 字典类型已被占用
      * */
-    DICT_TYPE_EXISTS(-300,"字典编码已被占用[%s]"),
+    DICT_TYPE_EXISTS(-300,"字典已存在[%s]"),
     /**
      * 字典类型已被占用
      * */
-    DICT_TYPE_NOT_FOUND(-301,"字典类型不存在[%s]"),
+    DICT_TYPE_NOT_FOUND(-301,"字典不存在[%s]"),
     /**
      * 字典项不存在
      * */
@@ -124,6 +124,15 @@ public enum SystemErrorCode {
      * 未找到桶名
      * */
     BUCKET_NOT_FOUND(-323,"未找到桶名"),
+
+    /**
+     * 字典项存在空值，不符合规范
+     * */
+    DICT_TIMES_IS_INVALID(-324,"字典项存在空值，不符合规范"),
+    /**
+     * 字典项值重复
+     * */
+    DICT_TIME_VALUE_REPEAT(-324,"字典项值重复[%s]"),
 
             ;
 

@@ -8,15 +8,12 @@ import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.base.util.JsonUtil;
 import com.funicorn.basic.common.base.valid.Insert;
 import com.funicorn.basic.common.base.valid.Update;
-import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.system.center.constant.SystemConstant;
 import com.funicorn.cloud.system.center.dto.DictTypeDTO;
 import com.funicorn.cloud.system.center.dto.DictTypeQueryPageDTO;
-import com.funicorn.cloud.system.center.entity.DictItem;
 import com.funicorn.cloud.system.center.entity.DictType;
 import com.funicorn.cloud.system.center.exception.SystemErrorCode;
 import com.funicorn.cloud.system.center.exception.SystemException;
-import com.funicorn.cloud.system.center.service.DictItemService;
 import com.funicorn.cloud.system.center.service.DictTypeService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -36,8 +33,6 @@ public class DictTypeController {
 
     @Resource
     private DictTypeService dictTypeService;
-    @Resource
-    private DictItemService dictItemService;
 
     /**
      * 查询所有字典
@@ -48,7 +43,7 @@ public class DictTypeController {
     public Result<IPage<DictType>> page(DictTypeQueryPageDTO dictTypeQueryPageDTO){
         LambdaQueryWrapper<DictType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DictType::getIsDelete, SystemConstant.NOT_DELETED);
-        queryWrapper.eq(DictType::getTenantId, SecurityUtil.getCurrentUser().getTenantId());
+        queryWrapper.eq(DictType::getTenantId, dictTypeQueryPageDTO.getTenantId());
         if (StringUtils.isNotBlank(dictTypeQueryPageDTO.getType())){
             queryWrapper.like(DictType::getType, dictTypeQueryPageDTO.getType());
         }
@@ -66,13 +61,6 @@ public class DictTypeController {
      * */
     @PostMapping("/add")
     public Result<?> add(@RequestBody @Validated(Insert.class) DictTypeDTO dictTypeDTO) {
-        int count = dictTypeService.count(Wrappers.<DictType>lambdaQuery()
-                .eq(DictType::getType,dictTypeDTO.getType())
-                .eq(DictType::getTenantId,SecurityUtil.getCurrentUser().getTenantId())
-                .eq(DictType::getIsDelete,SystemConstant.NOT_DELETED));
-        if (count>0) {
-            throw new SystemException(SystemErrorCode.DICT_TYPE_EXISTS,dictTypeDTO.getType());
-        }
         dictTypeService.add(dictTypeDTO);
         return Result.ok("新增成功");
     }
@@ -86,7 +74,7 @@ public class DictTypeController {
     public Result<?> update(@RequestBody @Validated(Update.class) DictTypeDTO dictTypeDTO) {
         int count = dictTypeService.count(Wrappers.<DictType>lambdaQuery()
                 .eq(DictType::getType,dictTypeDTO.getType())
-                .eq(DictType::getTenantId,SecurityUtil.getCurrentUser().getTenantId())
+                .eq(DictType::getTenantId,dictTypeDTO.getTenantId())
                 .eq(DictType::getIsDelete,SystemConstant.NOT_DELETED)
                 .ne(DictType::getId,dictTypeDTO.getId()));
         if (count>0) {
@@ -103,20 +91,8 @@ public class DictTypeController {
      * */
     @DeleteMapping("/{id}")
     public Result<?> remove(@PathVariable String id) {
-        DictType dictType = dictTypeService.getById(id);
-        if (dictType ==null){
-            throw new SystemException(SystemErrorCode.DICT_TYPE_NOT_FOUND,id);
-        }
-        int count = dictItemService.count(Wrappers.<DictItem>lambdaQuery()
-                .eq(DictItem::getDictType,dictType.getType())
-                .eq(DictItem::getTenantId,SecurityUtil.getCurrentUser().getTenantId())
-                .eq(DictItem::getIsDelete,SystemConstant.NOT_DELETED));
-        if (count>0) {
-            throw new SystemException(SystemErrorCode.DICT_TYPE_BIND_ITEMS);
-        }
-        dictType.setIsDelete(SystemConstant.IS_DELETED);
-        dictTypeService.updateById(dictType);
-        return Result.ok("新增成功");
+        dictTypeService.delete(id);
+        return Result.ok("已删除");
     }
 }
 

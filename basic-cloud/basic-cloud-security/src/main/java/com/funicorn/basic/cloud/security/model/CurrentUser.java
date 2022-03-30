@@ -171,10 +171,10 @@ public class CurrentUser implements UserDetails, Serializable {
     }
 
     /**
-     * 账号是否可用 0 可用 1不可用
+     * 账号是否可用 0 不可用 1可用
      * */
     @Override
     public boolean isEnabled() {
-        return this.enabled==null || this.enabled==0;
+        return this.enabled==null || this.enabled==1;
     }
 }

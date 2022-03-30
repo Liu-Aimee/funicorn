@@ -14,19 +14,4 @@ import java.util.List;
  * @since 2021-10-31
  */
 public interface AppTenantMapper extends BaseMapper<AppTenant> {
-
-    /**
-     * 查询已绑定的租户列表
-     * @param appId 应用id
-     * @return list
-     * */
-    List<AppTenant> selectBindTenantList(String appId);
-
-    /**
-     * 查询未绑定的租户列表
-     * @param userId 用户id
-     * @param appId 应用id
-     * @return list
-     * */
-    List<AppTenant> selectUnbindTenantList(String userId,String appId);
 }

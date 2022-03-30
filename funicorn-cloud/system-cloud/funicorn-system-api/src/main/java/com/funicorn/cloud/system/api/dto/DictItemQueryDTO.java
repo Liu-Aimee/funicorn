@@ -27,4 +27,10 @@ public class DictItemQueryDTO {
      * 标签
      * */
     private String dictLabel;
+
+    /**
+     * 租户id
+     * */
+    @NotBlank(message = "租户id不能为空",groups = Query.class)
+    private String tenantId;
 }

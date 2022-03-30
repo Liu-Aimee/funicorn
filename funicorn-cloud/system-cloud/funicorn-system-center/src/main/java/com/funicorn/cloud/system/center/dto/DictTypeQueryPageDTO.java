@@ -21,4 +21,9 @@ public class DictTypeQueryPageDTO extends PageDTO {
      * 类型
      * */
     private String type;
+
+    /**
+     * 租户id
+     * */
+    private String tenantId;
 }

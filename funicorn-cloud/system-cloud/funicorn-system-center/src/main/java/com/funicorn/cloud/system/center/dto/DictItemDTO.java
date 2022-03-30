@@ -36,4 +36,10 @@ public class DictItemDTO {
      */
     @NotBlank(message = "字典项标签不能为空",groups = Insert.class)
     private String dictLabel;
+
+    /**
+     * 租户id
+     */
+    @NotBlank(message = "租户id不能为空",groups = Insert.class)
+    private String tenantId;
 }

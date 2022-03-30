@@ -15,8 +15,14 @@ import com.funicorn.cloud.system.center.entity.DictType;
 public interface DictTypeService extends IService<DictType> {
 
     /**
-     * 新增字典类型
+     * 新增字典
      * @param dictTypeDTO 入参
      * */
     void add(DictTypeDTO dictTypeDTO);
+
+    /**
+     * 删除字典
+     * @param id 字典id
+     * */
+    void delete(String id);
 }

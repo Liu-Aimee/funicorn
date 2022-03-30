@@ -2,7 +2,6 @@ package com.funicorn.cloud.upms.center.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.funicorn.basic.common.datasource.util.ConvertUtil;
 import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
 import com.funicorn.cloud.upms.center.dto.AppTenantDTO;
@@ -20,7 +19,6 @@ import com.funicorn.cloud.upms.center.mapper.UserTenantMapper;
 import com.funicorn.cloud.upms.center.service.AppTenantService;
 import com.funicorn.cloud.upms.center.service.TenantService;
 import com.funicorn.cloud.upms.center.service.UserRoleService;
-import com.funicorn.cloud.upms.center.vo.TenantBindVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -144,11 +142,25 @@ public class AppTenantServiceImpl extends ServiceImpl<AppTenantMapper, AppTenant
             if (app==null){
                 throw new UpmsException(ErrorCode.APP_NOT_EXISTS,appId);
             }
-            AppTenant appTenant = new AppTenant();
-            appTenant.setAppName(app.getName());
-            appTenant.setStatus(UpmsConstant.APP_APPLYING);
-            appTenant.setTenantName(tenant.getTenantName());
-            baseMapper.insert(appTenant);
+
+            AppTenant appTenant = baseMapper.selectOne(Wrappers.<AppTenant>lambdaQuery()
+                    .eq(AppTenant::getTenantId,tenant.getId()).eq(AppTenant::getAppId,appId).last("limit 1"));
+            if (appTenant!=null) {
+                if (UpmsConstant.REFUSE_APP_APPLY.equals(appTenant.getStatus())) {
+                    appTenant.setStatus(UpmsConstant.APP_APPLYING);
+                } else {
+                    return;
+                }
+            } else {
+                appTenant = new AppTenant();
+                appTenant.setTenantId(tenant.getId());
+                appTenant.setAppName(app.getName());
+                appTenant.setStatus(UpmsConstant.APP_APPLYING);
+                appTenant.setTenantName(tenant.getTenantName());
+                appTenant.setAppId(appId);
+                appTenant.setAppName(app.getName());
+            }
+            saveOrUpdate(appTenant);
         });
     }
 
@@ -174,16 +186,8 @@ public class AppTenantServiceImpl extends ServiceImpl<AppTenantMapper, AppTenant
     }
 
     @Override
-    public TenantBindVO bindTenantList(String appId) {
-        List<AppTenant> bindAppTenants = baseMapper.selectBindTenantList(appId);
-        List<AppTenant> unbindAppTenants = baseMapper.selectUnbindTenantList(SecurityUtil.getCurrentUser().getId(),appId);
-        TenantBindVO tenantBindVO = new TenantBindVO();
-        if (bindAppTenants!=null && !bindAppTenants.isEmpty()) {
-            tenantBindVO.setBind(ConvertUtil.list2List(bindAppTenants,TenantBindVO.TenantInfo.class));
-        }
-        if (unbindAppTenants!=null && !unbindAppTenants.isEmpty()) {
-            tenantBindVO.setUnbind(ConvertUtil.list2List(unbindAppTenants,TenantBindVO.TenantInfo.class));
-        }
-        return tenantBindVO;
+    public List<AppTenant> bindTenantList(String appId) {
+        return baseMapper.selectList(Wrappers.<AppTenant>lambdaQuery()
+                .eq(AppTenant::getAppId,appId).eq(AppTenant::getStatus,UpmsConstant.ENABLED));
     }
 }

@@ -3,6 +3,9 @@ package com.funicorn.cloud.system.center.dto;
 import com.funicorn.basic.common.datasource.dto.PageDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @author Aimee
@@ -18,11 +21,6 @@ public class SyslogPageDTO extends PageDTO {
     private String operationType;
 
     /**
-     * 日志类型
-     * */
-    private String logType;
-
-    /**
      * 用户名
      * */
     private String username;
@@ -31,4 +29,21 @@ public class SyslogPageDTO extends PageDTO {
      * 租户id
      * */
     private String tenantId;
+
+    /**
+     * 开始时间
+     * */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date startTime;
+
+    /**
+     * 结束时间
+     * */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date endTime;
+
+    /**
+     * 应用名称
+     * */
+    private String serviceName;
 }

@@ -39,11 +39,11 @@
             <artifactId>basic-common-security</artifactId>
         </dependency>
         <!-- 日志集成elk -->
-        <dependency>
+        <!--<dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>6.1</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>

@@ -1,15 +1,14 @@
 package com.funicorn.basic.common.base.util;
 
+import com.funicorn.basic.common.base.model.DateModel;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * @author Aimee
@@ -19,7 +18,272 @@ import java.util.TimeZone;
 public class DateUtil {
 
 	/**
-	 * 获取当月开始时间
+	 * 获取两个时间段的小时集合
+	 * @param startTime 开始时间点
+	 * @param endTime 结束时间点
+	 * @return List
+	 * */
+	public static List<DateModel> getDifferHourList(Date startTime, Date endTime) {
+		List<DateModel> dateModels = new ArrayList<>();
+		if (startTime.compareTo(endTime) >= 0) {
+			return dateModels;
+		}
+		LocalDateTime startDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		LocalDateTime endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		long differDay = ChronoUnit.HOURS.between(startDate, endDate);
+		if (differDay==0) {
+			DateModel dateModel = new DateModel();
+			dateModel.setStartDateTime(startTime);
+			dateModel.setEndDateTime(endTime);
+			dateModels.add(dateModel);
+		} else {
+			DateModel firstDateModel = new DateModel();
+			firstDateModel.setStartDateTime(startTime);
+			firstDateModel.setEndDateTime(DateUtil.getHourEndTime(startTime.getTime()));
+			dateModels.add(firstDateModel);
+			startTime = DateUtil.getHourStartTime(startTime.getTime());
+			for (int i = 1; i < differDay; i++) {
+				Date date = DateUtil.addHour(startTime, i);
+				DateModel dateModel = new DateModel();
+				dateModel.setStartDateTime(date);
+				dateModel.setEndDateTime(DateUtil.getHourEndTime(date.getTime()));
+				dateModels.add(dateModel);
+			}
+
+			DateModel endDateModel = new DateModel();
+			endDateModel.setStartDateTime(DateUtil.addHour(startTime, (int)differDay));
+			endDateModel.setEndDateTime(endTime);
+			dateModels.add(endDateModel);
+		}
+		return dateModels;
+	}
+
+	/**
+	 * 获取两个时间段的天集合
+	 * @param startTime 开始时间点
+	 * @param endTime 结束时间点
+	 * @return List
+	 * */
+	public static List<DateModel> getDifferDayList(Date startTime, Date endTime) {
+		List<DateModel> dateModels = new ArrayList<>();
+		if (startTime.compareTo(endTime) >= 0) {
+			return dateModels;
+		}
+		LocalDate startDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		long differDay = ChronoUnit.DAYS.between(startDate, endDate);
+		if (differDay==0) {
+			DateModel dateModel = new DateModel();
+			dateModel.setStartDateTime(startTime);
+			dateModel.setEndDateTime(endTime);
+			dateModels.add(dateModel);
+			return dateModels;
+		}
+		//切换到startTime当天的开始的时间点
+		startTime = DateUtil.getDayStartTime(startTime.getTime());
+		for (int i = 0; i < differDay; i++) {
+			Date date = DateUtil.addDay(startTime, i);
+			DateModel dateModel = new DateModel();
+			dateModel.setStartDateTime(date);
+			dateModel.setEndDateTime(DateUtil.getDayEndTime(date.getTime()));
+			dateModels.add(dateModel);
+		}
+
+		Date date = DateUtil.addDay(startTime, (int)differDay);
+		DateModel endDateModel = new DateModel();
+		endDateModel.setStartDateTime(date);
+		endDateModel.setEndDateTime(endTime);
+		dateModels.add(endDateModel);
+		return dateModels;
+	}
+
+	/**
+	 * 获取两个时间段的周集合
+	 * @param startTime 开始时间点
+	 * @param endTime 结束时间点
+	 * @return List
+	 * */
+	public static List<DateModel> getDifferWeekList(Date startTime, Date endTime) {
+		List<DateModel> dateModels = new ArrayList<>();
+		if (startTime.compareTo(endTime) >= 0) {
+			return dateModels;
+		}
+		LocalDate startDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		long differWeek = ChronoUnit.WEEKS.between(startDate, endDate);
+		if (differWeek==0) {
+			DateModel dateModel = new DateModel();
+			dateModel.setStartDateTime(startTime);
+			dateModel.setEndDateTime(endTime);
+			dateModel.setWeek(DateUtil.getYearWeek(startTime));
+			dateModels.add(dateModel);
+		} else {
+			DateModel firstDateModel = new DateModel();
+			firstDateModel.setStartDateTime(startTime);
+			firstDateModel.setEndDateTime(DateUtil.getWeekEndTime(startTime.getTime()));
+			firstDateModel.setWeek(DateUtil.getYearWeek(startTime));
+			dateModels.add(firstDateModel);
+			startTime = DateUtil.getWeekStartTime(startTime.getTime());
+			for (int i = 1; i < differWeek; i++) {
+				DateModel dateModel = new DateModel();
+				Date date = DateUtil.addWeek(startTime,i);
+				dateModel.setStartDateTime(date);
+				dateModel.setEndDateTime(DateUtil.getWeekEndTime(date.getTime()));
+				dateModel.setWeek(DateUtil.getYearWeek(date));
+				dateModels.add(dateModel);
+			}
+			DateModel endDateModel = new DateModel();
+			endDateModel.setStartDateTime(DateUtil.addWeek(startTime,(int)differWeek));
+			endDateModel.setEndDateTime(endTime);
+			endDateModel.setWeek(DateUtil.getYearWeek(endDateModel.getStartDateTime()));
+			dateModels.add(endDateModel);
+		}
+		return dateModels;
+	}
+
+	/**
+	 * 获取两个时间段的月集合
+	 * @param startTime 开始时间点
+	 * @param endTime 结束时间点
+	 * @return List
+	 * */
+	public static List<DateModel> getDifferMonthList(Date startTime, Date endTime) {
+		List<DateModel> dateModels = new ArrayList<>();
+		if (startTime.compareTo(endTime) >= 0) {
+			return dateModels;
+		}
+		LocalDate startDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		long differMonth = ChronoUnit.MONTHS.between(startDate, endDate);
+		if (differMonth==0) {
+			DateModel dateModel = new DateModel();
+			dateModel.setStartDateTime(startTime);
+			dateModel.setEndDateTime(endTime);
+			dateModel.setMonth(DateUtil.getMonth(startTime));
+			dateModels.add(dateModel);
+		} else {
+			DateModel firstDateModel = new DateModel();
+			firstDateModel.setStartDateTime(startTime);
+			firstDateModel.setEndDateTime(DateUtil.getMonthEndTime(startTime.getTime()));
+			firstDateModel.setMonth(DateUtil.getMonth(startTime));
+			dateModels.add(firstDateModel);
+			//切换到开始时间当月的开始时间
+			startTime = DateUtil.getMonthStartTime(startTime.getTime());
+			for (int i = 1; i < differMonth; i++) {
+				DateModel dateModel = new DateModel();
+				Date date = DateUtil.addMonth(startTime,i);
+				dateModel.setStartDateTime(date);
+				dateModel.setEndDateTime(DateUtil.getMonthEndTime(date.getTime()));
+				dateModel.setMonth(DateUtil.getMonth(date));
+				dateModels.add(dateModel);
+			}
+			DateModel endDateModel = new DateModel();
+			endDateModel.setStartDateTime(DateUtil.addMonth(startTime,(int)differMonth));
+			endDateModel.setEndDateTime(endTime);
+			endDateModel.setMonth(DateUtil.getMonth(endDateModel.getStartDateTime()));
+			dateModels.add(endDateModel);
+		}
+		return dateModels;
+	}
+
+	/**
+	 * 获取指定时间1小时内的开始时间点
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Date
+	 */
+	public static Date getHourStartTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.set(Calendar.MINUTE, 0);
+		currentDate.set(Calendar.SECOND, 0);
+		currentDate.set(Calendar.MILLISECOND, 0);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定时间1小时内的结束时间点
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Date
+	 */
+	public static Date getHourEndTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.set(Calendar.MINUTE, 59);
+		currentDate.set(Calendar.SECOND, 59);
+		currentDate.set(Calendar.MILLISECOND, 999);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定日期的当天开始时间点
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Date
+	 */
+	public static Date getDayStartTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.set(Calendar.HOUR_OF_DAY, 0);
+		currentDate.set(Calendar.MINUTE, 0);
+		currentDate.set(Calendar.SECOND, 0);
+		currentDate.set(Calendar.MILLISECOND, 0);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定日期的当天结束时间点
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Date
+	 */
+	public static Date getDayEndTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.set(Calendar.HOUR_OF_DAY, 23);
+		currentDate.set(Calendar.MINUTE, 59);
+		currentDate.set(Calendar.SECOND, 59);
+		currentDate.set(Calendar.MILLISECOND, 999);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定日期当周的开始时间
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Date
+	 */
+	public static Date getWeekStartTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.setFirstDayOfWeek(Calendar.MONDAY);
+		currentDate.set(Calendar.HOUR_OF_DAY, 0);
+		currentDate.set(Calendar.MINUTE, 0);
+		currentDate.set(Calendar.SECOND, 0);
+		currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定日期当周的结束时间
+	 *
+	 * @param timeStamp 毫秒级时间戳
+	 * @return Long
+	 */
+	public static Date getWeekEndTime(Long timeStamp) {
+		Calendar currentDate = new GregorianCalendar();
+		currentDate.setTime(new Date(timeStamp));
+		currentDate.setFirstDayOfWeek(Calendar.MONDAY);
+		currentDate.set(Calendar.HOUR_OF_DAY, 23);
+		currentDate.set(Calendar.MINUTE, 59);
+		currentDate.set(Calendar.SECOND, 59);
+		currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		return currentDate.getTime();
+	}
+
+	/**
+	 * 获取指定时间当月的开始时间
 	 *
 	 * @param timeStamp 毫秒级时间戳
 	 * @return Date
@@ -29,7 +293,7 @@ public class DateUtil {
 	}
 
 	/**
-	 * 获取当月的结束时间
+	 * 获取指定时间当月的结束时间
 	 *
 	 * @param timeStamp 毫秒级时间戳
 	 * @return Date
@@ -39,11 +303,11 @@ public class DateUtil {
 	}
 
 	/**
-	 * 获取当月开始时间
+	 * 获取指定时间当月的开始时间
 	 *
 	 * @param timeStamp 毫秒级时间戳
 	 * @param timeZone  如 GMT+8:00
-	 * @return Long
+	 * @return Date
 	 */
 	public static Date getMonthStartTime(Long timeStamp, String timeZone) {
 		// 获取当前日期
@@ -62,11 +326,11 @@ public class DateUtil {
 	}
 
 	/**
-	 * 获取当月的结束时间
+	 * 获取指定时间当月的结束时间
 	 *
 	 * @param timeStamp 毫秒级时间戳
 	 * @param timeZone  如 GMT+8:00
-	 * @return Long
+	 * @return Date
 	 */
 	public static Date getMonthEndTime(Long timeStamp, String timeZone) {
 		// 获取当前日期
@@ -82,57 +346,6 @@ public class DateUtil {
 		calendar.set(Calendar.SECOND, 59);
 		calendar.set(Calendar.MILLISECOND, 999);
 		return calendar.getTime();
-	}
-
-	/**
-	 * 获取当周的开始时间
-	 *
-	 * @param timeStamp 毫秒级时间戳
-	 * @return Long
-	 */
-	public static Date getWeekStartTime(Long timeStamp) {
-		Calendar currentDate = new GregorianCalendar();
-		currentDate.setTime(new Date(timeStamp));
-		currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-
-		currentDate.set(Calendar.HOUR_OF_DAY, 0);
-		currentDate.set(Calendar.MINUTE, 0);
-		currentDate.set(Calendar.SECOND, 0);
-		currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		return currentDate.getTime();
-	}
-
-	/**
-	 * 获取当天的开始时间
-	 *
-	 * @param timeStamp 毫秒级时间戳
-	 * @return Long
-	 */
-	public static Date getDayStartTime(Long timeStamp) {
-		Calendar currentDate = new GregorianCalendar();
-		currentDate.setTime(new Date(timeStamp));
-		currentDate.set(Calendar.HOUR_OF_DAY, 0);
-		currentDate.set(Calendar.MINUTE, 0);
-		currentDate.set(Calendar.SECOND, 0);
-		currentDate.set(Calendar.MILLISECOND, 0);
-		return currentDate.getTime();
-	}
-
-	/**
-	 * 获取当月结束时间
-	 *
-	 * @param timeStamp 毫秒级时间戳
-	 * @return Long
-	 */
-	public static Date getWeekEndTime(Long timeStamp) {
-		Calendar currentDate = new GregorianCalendar();
-		currentDate.setTime(new Date(timeStamp));
-		currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-		currentDate.set(Calendar.HOUR_OF_DAY, 23);
-		currentDate.set(Calendar.MINUTE, 59);
-		currentDate.set(Calendar.SECOND, 59);
-		currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-		return currentDate.getTime();
 	}
 
 	/**
@@ -162,7 +375,7 @@ public class DateUtil {
 	}
 
 	/**
-	 * 判断第几月
+	 * 获取当年第多少月
 	 * 
 	 * @param date 日期
 	 * @return int
@@ -330,17 +543,27 @@ public class DateUtil {
 		return ChronoUnit.SECONDS.between(startDate1, endDate1);
 	}
 
-	public static final String YYYY_MM_DD_HH_MM_SS = "yyyy/MM/dd HH:mm:ss";
-	public static final String MM_DD_HH_MM = "MM/dd HH:mm";
-	public static final String YYYY_MM_DD_HH_MM = "yyyy/MM/dd HH:mm";
-	public static final String YYYY_MM_DD = "yyyy/MM/dd";
-	public static final String YYYY_MM = "yyyy/MM";
+	public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+	public static final String YYYY__MM__DD_HH_MM_SS = "yyyy/MM/dd HH:mm:ss";
+	public static final String MM_DD_HH_MM = "MM-dd HH:mm";
+	public static final String MM__DD_HH_MM = "MM/dd HH:mm";
+	public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm";
+	public static final String YYYY__MM__DD_HH_MM = "yyyy/MM/dd HH:mm";
+	public static final String YYYY_MM_DD = "yyyy-MM-dd";
+	public static final String YYYY__MM__DD = "yyyy/MM/dd";
+	public static final String YYYY_MM = "yyyy-MM";
+	public static final String YYYY__MM = "yyyy/MM";
 	public static final String HH_MM = "HH:mm";
-	public static final String YYYY_MM_DD_HH = "yyyy/MM/dd HH";
-	public static final String MM_DD = "MM/dd";
-	public static final String YYYY = "yyyy";
-	public static final String MM = "MM";
-	public static final String DD = "dd";
+	public static final String YYYY_MM_DD_HH = "yyyy-MM-dd HH";
+	public static final String YYYY__MM__DD_HH = "yyyy/MM/dd HH";
+	public static final String MM_DD = "MM-dd";
+	public static final String MM__DD = "MM/dd";
+	public static final String _YYYY = "yyyy";
+	public static final String _MM = "MM";
+	public static final String _DD = "dd";
+	public static final String _HH = "HH";
+	public static final String __MM = "mm";
+	public static final String _SS = "ss";
 
 	/**
 	 * 日期转换字符串
@@ -367,6 +590,21 @@ public class DateUtil {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	/**
+	 * 单元测试
+	 * */
+	public static void main(String[] args) {
+		List<DateModel> dateModels = DateUtil.getDifferMonthList(Objects.requireNonNull(strToDate("2022/01/21 00:00:00", YYYY_MM_DD_HH_MM_SS))
+				,Objects.requireNonNull(strToDate("2022/04/30 1:53:00", YYYY_MM_DD_HH_MM_SS)));
+		dateModels.forEach(dateModel -> {
+			System.out.println(dateModel.getStartDateTime());
+			System.out.println(dateModel.getEndDateTime());
+			System.out.println(dateModel.getWeek());
+			System.out.println(dateModel.getMonth());
+			System.out.println("-------------------------");
+		});
 	}
 
 }

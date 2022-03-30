@@ -134,6 +134,11 @@ public class UploadFileServiceImpl extends ServiceImpl<UploadFileMapper, UploadF
         if (uploadFile==null) {
             throw new SystemException(SystemErrorCode.FILE_NOT_FOUND);
         }
+        BucketConfig bucketConfig = bucketConfigMapper.selectOne(Wrappers.<BucketConfig>lambdaQuery()
+                .eq(BucketConfig::getName,uploadFile.getBucketName()).eq(BucketConfig::getIsDelete,SystemConstant.NOT_DELETED));
+        if (FileLevel.isPublic(bucketConfig.getLevel())){
+            return ossProperties.getEndpoint() + "/" + uploadFile.getBucketName() + "/" + uploadFile.getId() + uploadFile.getSuffix();
+        }
         String objectName = uploadFile.getId() + uploadFile.getSuffix();
         return ossTemplate.getFileSignUrl(uploadFile.getBucketName(),objectName,7);
     }

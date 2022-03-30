@@ -54,10 +54,11 @@
         </encoder>
     </appender>
 
-    <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+    <!-- ELK -->
+    <!--<appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>192.168.140.140:5044</destination>
-        <!-- encoder必须配置,有多种可选 -->
-        <!--<encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>-->
+        &lt;!&ndash; encoder必须配置,有多种可选 &ndash;&gt;
+        &lt;!&ndash;<encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>&ndash;&gt;
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp>
@@ -80,7 +81,7 @@
 
     <root level="info">
         <appender-ref ref="stash" />
-    </root>
+    </root>-->
 
     <root level="info">
         <appender-ref ref="stdout"/>

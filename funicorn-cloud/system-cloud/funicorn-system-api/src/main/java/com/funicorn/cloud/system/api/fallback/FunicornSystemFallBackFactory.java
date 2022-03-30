@@ -28,13 +28,13 @@ public class FunicornSystemFallBackFactory implements FallbackFactory<FunicornSy
             }
 
             @Override
-            public Result<UploadFileData> upload(MultipartFile file, String bucketPrefix, boolean downFlag, String fileLevel) {
+            public Result<UploadFileData> upload(MultipartFile file, String bucketPrefix, boolean downFlag) {
                 log.error("文件上传失败",cause);
                 return Result.error("文件上传失败");
             }
 
             @Override
-            public Result<List<UploadFileData>> multiUpload(MultipartFile[] files, String bucketPrefix, boolean downFlag, String fileLevel) {
+            public Result<List<UploadFileData>> multiUpload(MultipartFile[] files, String bucketPrefix, boolean downFlag) {
                 log.error("文件上传失败",cause);
                 return Result.error("文件上传失败");
             }

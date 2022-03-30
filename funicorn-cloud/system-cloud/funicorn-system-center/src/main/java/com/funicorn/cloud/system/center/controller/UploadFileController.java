@@ -64,7 +64,7 @@ public class UploadFileController {
             queryWrapper.eq(UploadFile::getSuffix,uploadFilePageDTO.getSuffix());
         }
         if (StringUtils.isNotBlank(uploadFilePageDTO.getBucketName())) {
-            queryWrapper.like(UploadFile::getBucketName,uploadFilePageDTO.getBucketName());
+            queryWrapper.eq(UploadFile::getBucketName,uploadFilePageDTO.getBucketName());
         }
         queryWrapper.orderByDesc(UploadFile::getCreatedTime);
         return Result.ok(uploadFileService.page(new Page<>(uploadFilePageDTO.getCurrent(),uploadFilePageDTO.getSize()),queryWrapper));
@@ -145,6 +145,8 @@ public class UploadFileController {
         fileName = URLEncoder.encode(fileName, "UTF-8");
         response.setContentType("application/x-download");
         response.addHeader("Content-Disposition" ,"attachment;filename=" +fileName);
+        //解决res.headers看不到Content-disposition
+        response.addHeader("Access-Control-Expose-Headers","Content-disposition");
         response.setCharacterEncoding("UTF-8");
         IOUtils.copy(is,response.getOutputStream());
     }

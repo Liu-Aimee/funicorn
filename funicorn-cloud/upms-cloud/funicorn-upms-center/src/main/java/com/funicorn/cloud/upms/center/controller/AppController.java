@@ -9,6 +9,7 @@ import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.base.util.JsonUtil;
 import com.funicorn.basic.common.base.valid.Insert;
 import com.funicorn.basic.common.base.valid.Update;
+import com.funicorn.basic.common.datasource.util.ConvertUtil;
 import com.funicorn.basic.common.security.model.RoleInfo;
 import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.upms.center.constant.LeveEnum;
@@ -22,18 +23,17 @@ import com.funicorn.cloud.upms.center.exception.UpmsException;
 import com.funicorn.cloud.upms.center.service.AppService;
 import com.funicorn.cloud.upms.center.service.AppTenantService;
 import com.funicorn.cloud.upms.center.service.RoleAppService;
-import com.funicorn.cloud.upms.center.vo.TenantBindVO;
+import com.funicorn.cloud.upms.center.vo.AppVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -57,64 +57,89 @@ public class AppController {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * 分页查询自己创建的应用
+     * 分页查询应用
      * @param appPageDTO 入参
      * @return Result
      * */
-    @PreAuthorize("hasAuthority('upms:app:page')")
     @GetMapping("/page")
-    public Result<IPage<App>> page(AppPageDTO appPageDTO) {
+    public Result<IPage<AppVO>> page(AppPageDTO appPageDTO) {
         LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
-        queryWrapper.eq(App::getCreatedBy,SecurityUtil.getCurrentUser().getUsername());
         if (StringUtils.isNotBlank(appPageDTO.getClientId())){
             queryWrapper.like(App::getClientId,appPageDTO.getClientId());
         }
         if (StringUtils.isNotBlank(appPageDTO.getName())){
             queryWrapper.like(App::getName,appPageDTO.getName());
         }
-        return Result.ok(appService.page(new Page<>(appPageDTO.getCurrent(),appPageDTO.getSize()),queryWrapper));
+        IPage<App> iPage = appService.page(new Page<>(appPageDTO.getCurrent(),appPageDTO.getSize()),queryWrapper);
+        if (iPage==null || iPage.getRecords()==null || iPage.getRecords().isEmpty()) {
+            return Result.ok(new Page<>(appPageDTO.getCurrent(),appPageDTO.getSize()));
+        }
+        IPage<AppVO> resultPage = ConvertUtil.page2Page(iPage,AppVO.class);
+        resultPage.getRecords().forEach(appVO -> {
+            int count = appTenantService.count(Wrappers.<AppTenant>lambdaQuery().eq(AppTenant::getAppId,appVO.getId()).eq(AppTenant::getStatus,UpmsConstant.APP_APPLYING));
+            appVO.setApplyCount(count);
+        });
+        return Result.ok(resultPage);
     }
 
     /**
-     * 分页查询自己可以访问的应用(包含自己创建的应用)
+     * 分页查询自己可以访问的应用
      * @param appPageDTO 入参
      * @return Result
      * */
-    @PreAuthorize("hasAuthority('upms:app:page')")
     @GetMapping("/visitPage")
     public Result<IPage<App>> visitPage(AppPageDTO appPageDTO) {
         return Result.ok(appService.visitPage(appPageDTO));
     }
 
     /**
-     * 分页查询应用市场的应用
+     * 分页查询自己可以访问的应用
      * @param appPageDTO 入参
      * @return Result
      * */
-    @GetMapping("/marketPage")
-    public Result<IPage<App>> marketPage(AppPageDTO appPageDTO) {
+    @GetMapping("/appPage")
+    public Result<IPage<AppVO>> appPage(AppPageDTO appPageDTO) {
+        return Result.ok(appService.appPage(appPageDTO));
+    }
+
+    /**
+     * 查询应用市场的应用
+     * @param appName 入参
+     * @return Result
+     * */
+    @GetMapping("/market")
+    public Result<List<AppVO>> market(@RequestParam(required = false) String appName) {
         LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
-        queryWrapper.and(wrapper-> wrapper.eq(App::getCreatedBy,SecurityUtil.getCurrentUser().getUsername()).or().eq(App::getLevel, LeveEnum.PUBLIC.toString()));
-        if (StringUtils.isNotBlank(appPageDTO.getClientId())){
-            queryWrapper.like(App::getClientId,appPageDTO.getClientId());
+        queryWrapper.eq(App::getLevel,LeveEnum.PUBLIC.toString().toLowerCase());
+        if (StringUtils.isNotBlank(appName)){
+            queryWrapper.like(App::getName,appName);
         }
-        if (StringUtils.isNotBlank(appPageDTO.getName())){
-            queryWrapper.like(App::getName,appPageDTO.getName());
+
+        List<App> apps = appService.list(queryWrapper);
+        if (apps==null || apps.isEmpty()) {
+            return Result.ok(new ArrayList<>());
         }
-        return Result.ok(appService.page(new Page<>(appPageDTO.getCurrent(),appPageDTO.getSize()),queryWrapper));
+
+        List<AppVO> appVOS = ConvertUtil.list2List(apps,AppVO.class);
+        List<AppTenant> appTenants = appTenantService.list(Wrappers.<AppTenant>lambdaQuery().eq(AppTenant::getTenantId,SecurityUtil.getCurrentUser().getTenantId()));
+        if (appTenants!=null && !appTenants.isEmpty()) {
+            Map<String,Integer> appTenantMap = appTenants.stream().collect(Collectors.toMap(AppTenant::getAppId,AppTenant::getStatus));
+            appVOS.forEach(appVO -> appVO.setTenantStatus(appTenantMap.get(appVO.getId())));
+        }
+        return Result.ok(appVOS);
     }
 
 
 
     /**
-     * 查询应用已绑定和未绑定的租户列表
+     * 查询应用已绑定的租户列表
      * @param appId 应用id
      * @return Result
      */
     @GetMapping("/bindTenantList")
-    public Result<TenantBindVO> bindTenantList(@RequestParam String appId) {
+    public Result<List<AppTenant>> bindTenantList(@RequestParam String appId) {
         return Result.ok(appTenantService.bindTenantList(appId));
     }
 
@@ -124,21 +149,25 @@ public class AppController {
      */
     @GetMapping("/currentApps")
     public Result<List<App>> currentApps() {
-        List<App> apps = appService.list(Wrappers.<App>lambdaQuery()
-                .eq(App::getCreatedBy,SecurityUtil.getCurrentUser().getUsername()).eq(App::getIsDelete,UpmsConstant.NOT_DELETED));
+        List<App> apps = new ArrayList<>();
         if (SecurityUtil.getCurrentUser().getRoles()!=null && !SecurityUtil.getCurrentUser().getRoles().isEmpty()){
             List<String> roleIds = SecurityUtil.getCurrentUser().getRoles().stream().map(RoleInfo::getId).collect(Collectors.toList());
             List<RoleApp> roleApps = roleAppService.list(Wrappers.<RoleApp>lambdaQuery().in(RoleApp::getRoleId,roleIds));
             List<String> appIds = roleApps.stream().map(RoleApp::getAppId).collect(Collectors.toList());
-            if (!appIds.isEmpty()) {
+            List<AppTenant> appTenants = appTenantService.list(Wrappers.<AppTenant>lambdaQuery()
+                    .eq(AppTenant::getTenantId,SecurityUtil.getCurrentUser().getTenantId())
+                    .ne(AppTenant::getStatus,UpmsConstant.APP_APPLYING).ne(AppTenant::getStatus,UpmsConstant.REFUSE_APP_APPLY));
+            List<String> tenantAppIds = appTenants.stream().map(AppTenant::getAppId).collect(Collectors.toList());
+            List<String> realAppIds = appIds.stream().filter(tenantAppIds::contains).collect(Collectors.toList());
+            if (!realAppIds.isEmpty()) {
                 LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
                 queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
                 queryWrapper.eq(App::getStatus,UpmsConstant.ENABLED);
-                queryWrapper.in(App::getId,appIds);
-                apps.addAll(appService.list(queryWrapper));
+                queryWrapper.in(App::getId,realAppIds);
+                apps = appService.list(queryWrapper);
             }
         }
-        return Result.ok(apps.stream().distinct().sorted(Comparator.comparing(App::getCreatedTime).reversed()).collect(Collectors.toList()));
+        return Result.ok(apps);
     }
 
     /**
@@ -248,6 +277,18 @@ public class AppController {
         updateApp.setClientSecret(passwordEncoder.encode(appSecretDTO.getClientSecret()));
         appService.updateById(updateApp);
         return Result.ok("修改密钥成功");
+    }
+
+    /**
+     * 待申请列表
+     * @param appId 应用id
+     * @return Result
+     */
+    @GetMapping("/applyingList")
+    public Result<List<AppTenant>> applyingList(@RequestParam String appId) {
+        List<AppTenant> appTenants = appTenantService.list(Wrappers.<AppTenant>lambdaQuery()
+                .eq(AppTenant::getAppId,appId).eq(AppTenant::getStatus,UpmsConstant.APP_APPLYING));
+        return Result.ok(appTenants);
     }
 
     /**

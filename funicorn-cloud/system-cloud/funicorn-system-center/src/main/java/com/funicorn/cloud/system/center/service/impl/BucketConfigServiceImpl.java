@@ -14,6 +14,8 @@ import com.funicorn.cloud.system.center.exception.SystemException;
 import com.funicorn.cloud.system.center.mapper.BucketConfigMapper;
 import com.funicorn.cloud.system.center.mapper.UploadFileMapper;
 import com.funicorn.cloud.system.center.service.BucketConfigService;
+import io.minio.Result;
+import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +43,8 @@ public class BucketConfigServiceImpl extends ServiceImpl<BucketConfigMapper, Buc
 
     @Override
     public void create(BucketDTO bucketDTO) throws Exception {
-        int count = count(Wrappers.<BucketConfig>lambdaQuery().eq(BucketConfig::getName,bucketDTO.getName()));
-        if (count>0) {
+        BucketConfig existsBucket = baseMapper.selectOne(Wrappers.<BucketConfig>lambdaQuery().eq(BucketConfig::getName,bucketDTO.getName()).last("limit 1"));
+        if (existsBucket!=null && SystemConstant.RECOVERY_YES.equals(existsBucket.getRecovery())) {
             throw new SystemException(SystemErrorCode.BUCKET_IS_EXISTS);
         }
         if (!FileLevel.hasType(bucketDTO.getLevel())) {
@@ -92,7 +94,7 @@ public class BucketConfigServiceImpl extends ServiceImpl<BucketConfigMapper, Buc
         updateById(updateBucket);
         UploadFile uploadFile = new UploadFile();
         uploadFile.setIsDelete(SystemConstant.IS_DELETED);
-        uploadFileMapper.update(uploadFile, Wrappers.<UploadFile>lambdaQuery().eq(UploadFile::getBucketName,bucketConfig.getName()));
+        uploadFileMapper.update(uploadFile, Wrappers.<UploadFile>lambdaUpdate().eq(UploadFile::getBucketName,bucketConfig.getName()));
         //修改文件为删除状态
         LambdaUpdateWrapper<UploadFile> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(UploadFile::getBucketName,bucketConfig.getName());
@@ -100,6 +102,11 @@ public class BucketConfigServiceImpl extends ServiceImpl<BucketConfigMapper, Buc
         UploadFile updateFile = new UploadFile();
         updateFile.setIsDelete(SystemConstant.IS_DELETED);
         uploadFileMapper.update(updateFile,updateWrapper);
+
+        Iterable<Result<Item>> iterable = ossTemplate.listObjectsByPrefix(bucketConfig.getName(),null,false);
+        for (Result<Item> itemResult : iterable) {
+            ossTemplate.removeObject(bucketConfig.getName(),itemResult.get().objectName());
+        }
         //OSS删除桶
         ossTemplate.removeBucket(bucketConfig.getName());
     }

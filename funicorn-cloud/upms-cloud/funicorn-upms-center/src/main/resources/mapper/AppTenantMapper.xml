@@ -1,29 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.funicorn.cloud.upms.center.mapper.AppTenantMapper">
-
-    <select id="selectBindTenantList" parameterType="java.lang.String" resultType="com.funicorn.cloud.upms.center.entity.AppTenant">
-        SELECT
-            tenant.id as tenant_id,
-            tenant.tenant_name
-        FROM
-            app_tenant
-                INNER JOIN tenant ON app_tenant.tenant_id = tenant.id
-        WHERE
-            tenant.is_delete = '0'
-          AND app_tenant.app_id = #{appId}
-    </select>
-
-    <select id="selectUnbindTenantList" parameterType="java.lang.String" resultType="com.funicorn.cloud.upms.center.entity.AppTenant">
-        SELECT
-            tenant.id AS tenant_id,
-            tenant.tenant_name
-        FROM
-            user_tenant
-                INNER JOIN tenant ON user_tenant.tenant_id = tenant.id
-        WHERE
-            tenant.is_delete = '0'
-          AND user_tenant.user_id =  #{userId}
-          AND NOT EXISTS (SELECT 1 FROM app_tenant WHERE tenant_id = tenant.id AND app_id = #{appId})
-    </select>
 </mapper>

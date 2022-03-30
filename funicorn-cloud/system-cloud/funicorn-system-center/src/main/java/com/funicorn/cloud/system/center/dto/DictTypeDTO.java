@@ -35,4 +35,10 @@ public class DictTypeDTO {
      * 描述
      */
     private String remark;
+
+    /**
+     * 租户id
+     */
+    @NotBlank(message = "租户id不能为空",groups = Insert.class)
+    private String tenantId;
 }

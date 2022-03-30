@@ -56,7 +56,7 @@ public class AppTenant extends BaseModel implements Serializable{
   private String tenantName;
 
   /**
-   * 0:已启用 1:已禁用 2:申请开通中 3:拒绝开通
+   * 0:已开通 1:已禁用 2:申请开通中 3:拒绝开通
    */
   @TableField(value = "status")
   private Integer status;

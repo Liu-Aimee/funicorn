@@ -30,7 +30,7 @@ public class RouteValidator {
      * @param filter predicate
      * */
     public static void validateFilter(Filter filter) {
-        Assert.isTrue(RouteConstant.PREDICATE_SUPPORT_TYPE.contains(filter.getType()), "不支持的过滤器类型[" + filter.getType() + "]");
+        Assert.isTrue(RouteConstant.FILTER_SUPPORT_TYPE.contains(filter.getType()), "不支持的过滤器类型[" + filter.getType() + "]");
         if (FilterType.hasType(filter.getType())) {
             FilterType.valueOf(filter.getType()).validate(filter);
         }

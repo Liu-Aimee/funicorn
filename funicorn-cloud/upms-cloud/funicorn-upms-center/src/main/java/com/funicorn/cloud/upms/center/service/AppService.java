@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.funicorn.cloud.upms.center.dto.AppPageDTO;
 import com.funicorn.cloud.upms.center.entity.App;
+import com.funicorn.cloud.upms.center.vo.AppVO;
 
 import java.util.List;
 
@@ -30,4 +31,11 @@ public interface AppService extends IService<App> {
      * @return App
      * */
     IPage<App> visitPage(AppPageDTO appPageDTO);
+
+    /**
+     * 分页查询当前用户可操作的应用
+     * @param appPageDTO 入参
+     * @return App
+     * */
+    IPage<AppVO> appPage(AppPageDTO appPageDTO);
 }

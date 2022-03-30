@@ -53,14 +53,20 @@ public class SysLogController {
         LambdaQueryWrapper<SysLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysLog::getIsDelete, SystemConstant.NOT_DELETED);
         queryWrapper.eq(SysLog::getTenantId,syslogPageDTO.getTenantId());
-        if (StringUtils.isNotBlank(syslogPageDTO.getLogType())) {
-            queryWrapper.eq(SysLog::getLogType,syslogPageDTO.getLogType());
-        }
         if (StringUtils.isNotBlank(syslogPageDTO.getOperationType())) {
             queryWrapper.eq(SysLog::getOperationType,syslogPageDTO.getOperationType());
         }
         if (StringUtils.isNotBlank(syslogPageDTO.getUsername())) {
             queryWrapper.like(SysLog::getUsername,syslogPageDTO.getUsername());
+        }
+        if (syslogPageDTO.getStartTime()!=null) {
+            queryWrapper.ge(SysLog::getCreatedTime,syslogPageDTO.getStartTime());
+        }
+        if (syslogPageDTO.getEndTime()!=null) {
+            queryWrapper.le(SysLog::getCreatedTime,syslogPageDTO.getEndTime());
+        }
+        if (StringUtils.isNotBlank(syslogPageDTO.getServiceName())) {
+            queryWrapper.like(SysLog::getServiceName,syslogPageDTO.getServiceName());
         }
         queryWrapper.orderByDesc(SysLog::getCreatedTime);
         IPage<SysLog> iPage = sysLogService.page(new Page<>(syslogPageDTO.getCurrent(),syslogPageDTO.getSize()),queryWrapper);

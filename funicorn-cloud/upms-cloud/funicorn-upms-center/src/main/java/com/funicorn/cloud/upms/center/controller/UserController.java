@@ -9,7 +9,6 @@ import com.funicorn.basic.common.base.valid.Update;
 import com.funicorn.basic.common.feign.annotation.Inner;
 import com.funicorn.basic.common.security.model.CurrentUser;
 import com.funicorn.basic.common.security.util.SecurityUtil;
-import com.funicorn.cloud.system.api.model.FileLevel;
 import com.funicorn.cloud.system.api.model.UploadFileData;
 import com.funicorn.cloud.system.api.service.FunicornSystemService;
 import com.funicorn.cloud.upms.api.model.UserInfo;
@@ -157,7 +156,7 @@ public class UserController {
         if (StringUtils.isBlank(file.getContentType()) || !suffixList.contains(file.getContentType().split("/")[1])) {
             throw new UpmsException(ErrorCode.NOT_SUPPORTED_PIC_SUFFIX,file.getContentType());
         }
-        Result<UploadFileData> result = funicornSystemService.upload(file,null,true,FileLevel.PUBLIC.getValue());
+        Result<UploadFileData> result = funicornSystemService.upload(file,null,true);
         if (result==null || !result.isSuccess() || result.getData()==null){
             return Result.error("头像上传失败");
         }

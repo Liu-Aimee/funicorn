@@ -40,6 +40,6 @@ public class SystemConstant {
     public static final String RECOVERY_YES = "1";
     public static final String RECOVERY_NO = "0";
 
-
-
+    /**可预览文件后缀列表*/
+    public static final List<String> SUPPORT_PREVIEW_SUFFIX = Arrays.asList("","","");
 }

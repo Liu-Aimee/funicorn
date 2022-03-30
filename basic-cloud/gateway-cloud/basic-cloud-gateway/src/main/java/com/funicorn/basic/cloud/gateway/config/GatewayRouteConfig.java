@@ -143,7 +143,9 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
         List<PredicateDefinition> predicateDefinitions = new ArrayList<>();
         for (RoutePredicate routePredicate : routePredicates) {
             List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
-                    .eq(DictItem::getDictType,routePredicate.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
+                    .eq(DictItem::getDictType,routePredicate.getType())
+                    .eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED)
+                    .eq(DictItem::getTenantId,-1));
             if (dictItems==null || dictItems.isEmpty()) {
                 continue;
             }
@@ -179,7 +181,9 @@ public class GatewayRouteConfig implements ApplicationEventPublisherAware, Comma
                 //过滤掉不需要设置参数的过滤器
                 if (!GatewayConstant.FILTER_NOT_HAS_ARGS_TYPES.contains(routeFilter.getType())){
                     List<DictItem> dictItems = dictItemService.list(Wrappers.<DictItem>lambdaQuery()
-                            .eq(DictItem::getDictType,routeFilter.getType()).eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED));
+                            .eq(DictItem::getDictType,routeFilter.getType())
+                            .eq(DictItem::getIsDelete,GatewayConstant.NOT_DELETED)
+                            .eq(DictItem::getTenantId,-1));
                     if (dictItems==null || dictItems.isEmpty()) {
                         continue;
                     }
