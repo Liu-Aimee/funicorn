@@ -18,8 +18,9 @@ public interface UserRoleMapper extends BaseMapper<UserRole> {
 
     /**
      * 查询用户的所有角色信息
+     * @param tenantId 租户id
      * @param userId 用户id
      * @return List
      * */
-    List<Role> selectRolesByUserId(String userId);
+    List<Role> selectRolesByUserId(String tenantId,String userId);
 }

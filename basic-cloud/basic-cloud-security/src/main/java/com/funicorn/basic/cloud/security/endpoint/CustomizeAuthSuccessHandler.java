@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -79,11 +81,12 @@ public class CustomizeAuthSuccessHandler implements AuthenticationSuccessHandler
      * 重定向url
      * 这里重定向到登陆时访问的那台服务器，可以重定向到服务网关
      * */
-    protected String buildRedirectUrl(String clientId, String redirectUrl, String state, String scope,String responseType) {
+    protected String buildRedirectUrl(String clientId, String redirectUrl, String state, String scope,String responseType) throws UnsupportedEncodingException {
 
         String codeKey = UUID.randomUUID().toString();
         redisTemplate.opsForValue().set(codeKey, SecurityContext.getCurrentUser(),60, TimeUnit.SECONDS);
-
+        //对redirectUrl编码
+        redirectUrl = URLEncoder.encode(redirectUrl,"UTF-8");
         StringBuilder sb = new StringBuilder();
         sb.append(funicornConfigProperties.getSecurity().getServerAddr());
         sb.append("/oauth/authorize?client_id=").append(clientId)

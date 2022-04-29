@@ -74,7 +74,7 @@ public class Menu extends BaseModel implements Serializable{
   private String status;
 
   /**
-   * 级别 PUBLIC/PRIVATE
+   * 级别 public/private
    */
   @TableField(value = "level")
   private String level;

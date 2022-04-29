@@ -38,7 +38,7 @@ public interface FunicornSystemService {
      * */
     @PostMapping(value = "/File/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     Result<UploadFileData> upload(@RequestPart("file") MultipartFile file,
-                                  @RequestParam(required = false) String bucketName,
+                                  @RequestParam String bucketName,
                                   @RequestParam(required = false,defaultValue = "false") boolean downFlag);
 
     /**

@@ -25,6 +25,13 @@ public interface MenuService extends IService<Menu> {
     List<MenuTree> getCurrentMenusByAppId(String appId);
 
     /**
+     * 查询当前登录人选择的应用的左侧菜单树
+     * @param clientId 应用唯一标识
+     * @return TreeMenuVo
+     * */
+    List<MenuTree> getCurrentMenusByClientId(String clientId);
+
+    /**
      * 根据应用id查询菜单树
      * @param appId 应用id
      * @return TreeMenuVo

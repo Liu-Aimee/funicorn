@@ -18,7 +18,10 @@ import com.funicorn.cloud.upms.center.dto.UserPageDTO;
 import com.funicorn.cloud.upms.center.entity.*;
 import com.funicorn.cloud.upms.center.exception.ErrorCode;
 import com.funicorn.cloud.upms.center.exception.UpmsException;
-import com.funicorn.cloud.upms.center.mapper.*;
+import com.funicorn.cloud.upms.center.mapper.TenantMapper;
+import com.funicorn.cloud.upms.center.mapper.UserMapper;
+import com.funicorn.cloud.upms.center.mapper.UserOrgMapper;
+import com.funicorn.cloud.upms.center.mapper.UserTenantMapper;
 import com.funicorn.cloud.upms.center.service.UserRoleService;
 import com.funicorn.cloud.upms.center.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -57,33 +61,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public IPage<UserInfo> getUserPage(UserPageDTO userPageDTO) {
         Map<String, Object> params = (Map<String, Object>) JsonUtil.object2Map(userPageDTO);
-        params.put("type",UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType()) ? UpmsConstant.TENANT_USER_ADMIN : UpmsConstant.TENANT_USER_NORMAL);
+        params.put("type",userPageDTO.getType());
         IPage<User> userPage = baseMapper.selectUserPage(new Page<>(userPageDTO.getCurrent(),userPageDTO.getSize()),params);
         IPage<UserInfo> userInfoPage = ConvertUtil.page2Page(userPage, UserInfo.class);
 
-        userInfoPage.getRecords().forEach(userInfo -> {
+        //非超级管理员 需要过滤掉不属于自己管辖的租户
+        final List<String> tenants = new ArrayList<>();
+        if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
+            List<UserTenant> userTenants = userTenantMapper.selectList(Wrappers.<UserTenant>lambdaQuery()
+                    .eq(UserTenant::getUserId,SecurityUtil.getCurrentUser().getId())
+                    .eq(UserTenant::getType,UpmsConstant.TENANT_USER_ADMIN));
+            tenants.addAll(userTenants.stream().map(UserTenant::getTenantId).collect(Collectors.toList()));
+        }
+
+        for (UserInfo userInfo : userInfoPage.getRecords()) {
             //角色信息
-            List<Role> roleList = userRoleService.getRolesByUserId(userInfo.getId());
+            List<Role> roleList = userRoleService.getRolesByUserId(userPageDTO.getTenantId(),userInfo.getId());
             if (roleList!=null && !roleList.isEmpty()){
                 userInfo.setRoleInfos(ConvertUtil.list2List(roleList,RoleInfo.class));
             }
             //组织机构信息
-            UserOrg userOrg = userOrgMapper.selectOne(Wrappers.<UserOrg>lambdaQuery().eq(UserOrg::getUserId,userInfo.getId()));
+            UserOrg userOrg = userOrgMapper.selectOne(Wrappers.<UserOrg>lambdaQuery()
+                    .eq(UserOrg::getUserId,userInfo.getId()).eq(UserOrg::getTenantId,userPageDTO.getTenantId()).last("limit 1"));
             if (userOrg!=null){
                 userInfo.setOrgId(userOrg.getOrgId());
                 userInfo.setOrgName(userOrg.getOrgName());
             }
+            //用户类型
+            UserTenant userTenant = userTenantMapper.selectOne(Wrappers.<UserTenant>lambdaQuery().
+                    eq(UserTenant::getUserId,userInfo.getId()).eq(UserTenant::getTenantId,userPageDTO.getTenantId()).last("limit 1"));
+            if (userTenant!=null){
+                userInfo.setType(userTenant.getType());
+            }
             //租户信息
             List<UserTenant> userTenants = userTenantMapper.selectList(Wrappers.<UserTenant>lambdaQuery().eq(UserTenant::getUserId,userInfo.getId()));
+            if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
+                userTenants = userTenants.stream().filter(tenant-> tenants.contains(tenant.getTenantId())).collect(Collectors.toList());
+            }
             if (userTenants!=null && !userTenants.isEmpty()){
                 List<UserTenInfo> userTenInfoList = new ArrayList<>();
-                userTenants.forEach(userTenant -> {
-                    UserTenInfo userTenInfo = JsonUtil.object2Object(userTenant,UserTenInfo.class);
+                userTenants.forEach(userTenantVO -> {
+                    UserTenInfo userTenInfo = JsonUtil.object2Object(userTenantVO,UserTenInfo.class);
                     userTenInfoList.add(userTenInfo);
                 });
                 userInfo.setUserTenInfos(userTenInfoList);
             }
-        });
+        }
         return userInfoPage;
     }
 
@@ -95,7 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         UserInfo userInfo = JsonUtil.object2Object(user,UserInfo.class);
         //角色信息
-        List<Role> roleList = userRoleService.getRolesByUserId(userInfo.getId());
+        List<Role> roleList = userRoleService.getRolesByUserId(SecurityUtil.getCurrentUser().getTenantId(), userInfo.getId());
         if (roleList!=null && !roleList.isEmpty()){
             userInfo.setRoleInfos(ConvertUtil.list2List(roleList,RoleInfo.class));
         }
@@ -162,18 +185,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(null);
         baseMapper.updateById(user);
 
+        //非超级管理员 需要过滤掉不属于自己管辖的租户
+        List<String> tenants = new ArrayList<>();
+        if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
+            List<UserTenant> userTenants = userTenantMapper.selectList(Wrappers.<UserTenant>lambdaQuery()
+                    .eq(UserTenant::getUserId,SecurityUtil.getCurrentUser().getId())
+                    .eq(UserTenant::getType,UpmsConstant.TENANT_USER_ADMIN));
+            tenants = userTenants.stream().map(UserTenant::getTenantId).collect(Collectors.toList());
+            if (tenants.isEmpty()) {
+                throw new RuntimeException("操作人未绑定租户!");
+            }
+        }
+
         //用户与租户信息
         if (userDTO.getTenantIds()!=null && !userDTO.getTenantIds().isEmpty()){
 
             //删除用户取消绑定的租户
             //删除用户租户信息
-            userTenantMapper.delete(Wrappers.<UserTenant>lambdaQuery()
-                    .eq(UserTenant::getUserId,userDTO.getId())
-                    .notIn(UserTenant::getTenantId,userDTO.getTenantIds()));
+            if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
+                userTenantMapper.delete(Wrappers.<UserTenant>lambdaQuery()
+                        .eq(UserTenant::getUserId,userDTO.getId())
+                        .notIn(UserTenant::getTenantId,userDTO.getTenantIds())
+                        .in(UserTenant::getTenantId,tenants));
+            }else {
+                userTenantMapper.delete(Wrappers.<UserTenant>lambdaQuery()
+                        .eq(UserTenant::getUserId,userDTO.getId())
+                        .notIn(UserTenant::getTenantId,userDTO.getTenantIds()));
+            }
             //删除用户角色信息
-            userRoleService.remove(Wrappers.<UserRole>lambdaQuery()
-                    .eq(UserRole::getUserId,userDTO.getId())
-                    .notIn(UserRole::getTenantId,userDTO.getTenantIds()));
+            if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
+                userRoleService.remove(Wrappers.<UserRole>lambdaQuery()
+                        .eq(UserRole::getUserId,userDTO.getId())
+                        .notIn(UserRole::getTenantId,userDTO.getTenantIds())
+                        .in(UserRole::getTenantId,tenants));
+            } else {
+                userRoleService.remove(Wrappers.<UserRole>lambdaQuery()
+                        .eq(UserRole::getUserId,userDTO.getId())
+                        .notIn(UserRole::getTenantId,userDTO.getTenantIds()));
+            }
 
             //重新绑定新的租户
             userDTO.getTenantIds().forEach(tenantId->{

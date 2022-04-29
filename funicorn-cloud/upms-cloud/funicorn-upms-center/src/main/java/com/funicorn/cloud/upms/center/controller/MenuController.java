@@ -49,6 +49,16 @@ public class MenuController {
     }
 
     /**
+     * 查询当前登录人选中应用的左侧菜单树
+     * @param clientId 应用唯一标识
+     * @return Result
+     */
+    @GetMapping("/getCurrentMenusByClientId")
+    public Result<List<MenuTree>> getCurrentMenusByClientId(@RequestParam("clientId")String clientId){
+        return Result.ok(menuService.getCurrentMenusByClientId(clientId));
+    }
+
+    /**
      * 通过应用id查询菜单树
      * @param appId 应用id
      * @return Result
@@ -76,9 +86,8 @@ public class MenuController {
      * @param roleMenuDTO 入参
      * @return Result
      */
-    @PreAuthorize("hasAuthority('upms:role:menu:bind')")
-    @PostMapping("/bind")
-    public Result<?> bind(@RequestBody @Validated(Insert.class) RoleMenuDTO roleMenuDTO) {
+    @PostMapping("/bindRole")
+    public Result<?> bindRole(@RequestBody @Validated(Insert.class) RoleMenuDTO roleMenuDTO) {
         roleMenuService.bind(roleMenuDTO);
         return Result.ok("绑定成功");
     }

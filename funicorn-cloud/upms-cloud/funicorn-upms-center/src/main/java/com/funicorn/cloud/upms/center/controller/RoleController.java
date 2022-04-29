@@ -10,23 +10,32 @@ import com.funicorn.basic.common.base.util.JsonUtil;
 import com.funicorn.basic.common.base.valid.Insert;
 import com.funicorn.basic.common.base.valid.Update;
 import com.funicorn.basic.common.datasource.util.ConvertUtil;
-import com.funicorn.basic.common.security.model.CurrentUser;
 import com.funicorn.basic.common.security.util.SecurityUtil;
+import com.funicorn.cloud.upms.api.model.MenuTree;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
 import com.funicorn.cloud.upms.center.dto.RoleDTO;
 import com.funicorn.cloud.upms.center.dto.RolePageDTO;
+import com.funicorn.cloud.upms.center.dto.UserRoleDTO;
+import com.funicorn.cloud.upms.center.entity.Menu;
 import com.funicorn.cloud.upms.center.entity.Role;
+import com.funicorn.cloud.upms.center.entity.RoleMenu;
 import com.funicorn.cloud.upms.center.entity.UserRole;
 import com.funicorn.cloud.upms.center.exception.ErrorCode;
 import com.funicorn.cloud.upms.center.exception.UpmsException;
+import com.funicorn.cloud.upms.center.service.MenuService;
+import com.funicorn.cloud.upms.center.service.RoleMenuService;
 import com.funicorn.cloud.upms.center.service.RoleService;
 import com.funicorn.cloud.upms.center.service.UserRoleService;
+import com.funicorn.cloud.upms.center.util.TreeUtil;
 import com.funicorn.cloud.upms.center.vo.RoleVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 角色管理 接口
@@ -42,6 +51,10 @@ public class RoleController {
     private RoleService roleService;
     @Resource
     private UserRoleService userRoleService;
+    @Resource
+    private RoleMenuService roleMenuService;
+    @Resource
+    private MenuService menuService;
 
     /**
      * 角色列表分页查询
@@ -50,14 +63,14 @@ public class RoleController {
      * */
     @GetMapping("/page")
     public Result<IPage<RoleVO>> page(RolePageDTO rolePageDTO){
-        CurrentUser currentUser = SecurityUtil.getCurrentUser();
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Role::getTenantId,currentUser.getTenantId());
-        if (currentUser.getTenantId().equals(UpmsConstant.SUPER_TENANT_ID)){
-            queryWrapper.eq(Role::getCode, UpmsConstant.ROLE_TENANT_ADMIN);
-        }else {
+        queryWrapper.eq(Role::getTenantId,rolePageDTO.getTenantId());
+        queryWrapper.ne(Role::getCode, UpmsConstant.ROLE_SUPER_ADMIN);
+        //租户管理员只能看到普通角色
+        if (!UpmsConstant.TENANT_USER_SUPER.equals(SecurityUtil.getCurrentUser().getType())) {
             queryWrapper.ne(Role::getCode, UpmsConstant.ROLE_TENANT_ADMIN);
         }
+        queryWrapper.eq(Role::getIsDelete,UpmsConstant.NOT_DELETED);
         if (StringUtils.isNotBlank(rolePageDTO.getName())){
             queryWrapper.like(Role::getName,rolePageDTO.getName());
         }
@@ -68,10 +81,32 @@ public class RoleController {
 
         IPage<RoleVO> roleVoPage = ConvertUtil.page2Page(iPage, RoleVO.class);
         roleVoPage.getRecords().forEach(roleVo -> {
-            int userNum = userRoleService.count(Wrappers.<UserRole>query().lambda().eq(UserRole::getRoleId,roleVo.getId()));
+            int userNum = userRoleService.count(Wrappers.<UserRole>query().lambda().eq(UserRole::getRoleId,roleVo.getId()).eq(UserRole::getTenantId,rolePageDTO.getTenantId()));
             roleVo.setUserNum(userNum);
         });
         return Result.ok(roleVoPage);
+    }
+
+    /**
+     * 获取角色菜单列表
+     * @param roleId 角色id
+     * @param appId 应用id
+     * @return Result
+     * */
+    @GetMapping("/getMenuTree")
+    public Result<List<MenuTree>> getMenuTree(@RequestParam String roleId,@RequestParam String appId) {
+        List<RoleMenu> roleMenus = roleMenuService.list(Wrappers.<RoleMenu>lambdaQuery().eq(RoleMenu::getRoleId,roleId));
+        List<String> menuIds = roleMenus.stream().map(RoleMenu::getMenuId).collect(Collectors.toList());
+        if (menuIds.isEmpty()) {
+            return Result.ok(new ArrayList<>());
+        }
+        List<Menu> menus = menuService.list(Wrappers.<Menu>lambdaQuery().eq(Menu::getAppId,appId).in(Menu::getId,menuIds)
+                .eq(Menu::getIsDelete,UpmsConstant.NOT_DELETED).eq(Menu::getStatus,"show"));
+        if (menus.isEmpty()) {
+            return Result.ok(new ArrayList<>());
+        }
+        List<MenuTree> menuTreeList = ConvertUtil.list2List(menus,MenuTree.class);
+        return Result.ok(TreeUtil.buildMenuTree(menuTreeList));
     }
 
     /**
@@ -81,19 +116,15 @@ public class RoleController {
      * */
     @PostMapping("/add")
     public Result<?> add(@RequestBody @Validated(Insert.class) RoleDTO roleDTO){
-        CurrentUser currentUser = SecurityUtil.getCurrentUser();
-        int count = roleService.count(Wrappers.<Role>query().lambda().eq(Role::getName, roleDTO.getName()).eq(Role::getTenantId, currentUser.getTenantId()));
+        int count = roleService.count(Wrappers.<Role>query().lambda().eq(Role::getName, roleDTO.getName()).eq(Role::getTenantId, roleDTO.getTenantId()));
         if (count>0) {
             throw new UpmsException(ErrorCode.ROLE_NAME_EXISTS,roleDTO.getName());
         }
-        String code = "ROLE_" + roleDTO.getCode();
-        count = roleService.count(Wrappers.<Role>query().lambda().eq(Role::getCode, code).eq(Role::getTenantId, currentUser.getTenantId()));
+        count = roleService.count(Wrappers.<Role>query().lambda().eq(Role::getCode, roleDTO.getCode()).eq(Role::getTenantId, roleDTO.getTenantId()));
         if (count>0) {
             throw new UpmsException(ErrorCode.ROLE_CODE_EXISTS,roleDTO.getCode());
         }
         Role role = JsonUtil.object2Object(roleDTO,Role.class);
-        role.setCode(code);
-        role.setTenantId(currentUser.getTenantId());
         roleService.save(role);
         return Result.ok(role);
     }
@@ -105,11 +136,12 @@ public class RoleController {
      * */
     @PostMapping("/update")
     public Result<?> update(@RequestBody @Validated(Update.class) RoleDTO roleDTO){
+        Role originalRole = roleService.getById(roleDTO.getId());
         //不允许修改角色编码
         roleDTO.setCode(null);
-        CurrentUser currentUser = SecurityUtil.getCurrentUser();
         if (StringUtils.isNotBlank(roleDTO.getName())){
-            int count = roleService.count(Wrappers.<Role>query().lambda().eq(Role::getName, roleDTO.getName()).eq(Role::getTenantId, currentUser.getTenantId()));
+            int count = roleService.count(Wrappers.<Role>query().lambda()
+                    .eq(Role::getName, roleDTO.getName()).eq(Role::getTenantId, originalRole.getTenantId()).ne(Role::getId,roleDTO.getId()));
             if (count>0) {
                 throw new UpmsException(ErrorCode.ROLE_NAME_EXISTS,roleDTO.getName());
             }
@@ -120,16 +152,24 @@ public class RoleController {
     }
 
     /**
+     * 用户关联角色
+     * @param userRoleDTO 入参
+     * @return Result
+     * */
+    @PostMapping("/roleBindUser")
+    public Result<?> roleBindUser(@RequestBody UserRoleDTO userRoleDTO){
+        userRoleService.userBindRole(userRoleDTO);
+        return Result.ok();
+    }
+
+    /**
      * 删除角色
      * @param roleId 角色id
      * @return Result
      */
     @DeleteMapping("/{roleId}")
-    public Result<?> deleteById(@PathVariable String roleId) {
-        Role role = new Role();
-        role.setId(roleId);
-        role.setIsDelete(UpmsConstant.IS_DELETED);
-        roleService.updateById(role);
+    public Result<?> removeById(@PathVariable String roleId) {
+        roleService.removeRole(roleId);
         return Result.ok();
     }
 }

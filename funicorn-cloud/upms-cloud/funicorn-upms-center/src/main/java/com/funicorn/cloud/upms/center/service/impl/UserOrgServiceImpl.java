@@ -51,7 +51,7 @@ public class UserOrgServiceImpl extends ServiceImpl<UserOrgMapper, UserOrg> impl
             userPage.getRecords().forEach(userInfo -> {
                 userInfo.setTenantId(SecurityUtil.getCurrentUser().getTenantId());
                 //角色信息
-                List<Role> roleList = userRoleService.getRolesByUserId(userInfo.getId());
+                List<Role> roleList = userRoleService.getRolesByUserId(userOrgPageDTO.getTenantId(),userInfo.getId());
                 if (roleList!=null && !roleList.isEmpty()){
                     userInfo.setRoleInfos(ConvertUtil.list2List(roleList, RoleInfo.class));
                 }
@@ -68,7 +68,7 @@ public class UserOrgServiceImpl extends ServiceImpl<UserOrgMapper, UserOrg> impl
             binds.forEach(userInfo -> {
                 userInfo.setTenantId(tenantId);
                 //角色信息
-                List<Role> roleList = userRoleService.getRolesByUserId(userInfo.getId());
+                List<Role> roleList = userRoleService.getRolesByUserId(tenantId,userInfo.getId());
                 if (roleList!=null && !roleList.isEmpty()){
                     userInfo.setRoleInfos(ConvertUtil.list2List(roleList, RoleInfo.class));
                 }
@@ -82,7 +82,7 @@ public class UserOrgServiceImpl extends ServiceImpl<UserOrgMapper, UserOrg> impl
                 userInfo.setTenantId(tenantId);
                 userInfo.setOrgId(orgId);
                 //角色信息
-                List<Role> roleList = userRoleService.getRolesByUserId(userInfo.getId());
+                List<Role> roleList = userRoleService.getRolesByUserId(tenantId,userInfo.getId());
                 if (roleList!=null && !roleList.isEmpty()){
                     userInfo.setRoleInfos(ConvertUtil.list2List(roleList, RoleInfo.class));
                 }

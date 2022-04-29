@@ -8,7 +8,10 @@
         SELECT DISTINCT u.*
           FROM user u INNER JOIN user_tenant ut on u.id = ut.user_id
          where u.is_delete = 0
-           and ut.type = #{user.type}
+           and ut.type <![CDATA[ <> ]]> -1
+        <if test="user.type!=null and user.type!=''">
+            and ut.type = #{user.type}
+        </if>
         <if test="user.username!=null and user.username!=''">
             and u.username like concat('%',#{user.username},'%')
         </if>

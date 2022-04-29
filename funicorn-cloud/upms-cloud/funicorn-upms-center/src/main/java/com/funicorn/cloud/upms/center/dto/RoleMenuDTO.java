@@ -24,6 +24,12 @@ public class RoleMenuDTO implements Serializable {
     private String roleId;
 
     /**
+     * 租户id
+     * */
+    @NotBlank(message = "租户id不能为空",groups = Insert.class)
+    private String tenantId;
+
+    /**
      * 菜单信息数组
      * */
     @NotEmpty(message = "绑定菜单不能为空",groups = Insert.class)

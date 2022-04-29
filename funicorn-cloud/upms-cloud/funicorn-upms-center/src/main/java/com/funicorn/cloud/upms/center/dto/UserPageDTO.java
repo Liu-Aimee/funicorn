@@ -4,6 +4,7 @@ import com.funicorn.basic.common.datasource.dto.PageDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -27,7 +28,13 @@ public class UserPageDTO extends PageDTO implements Serializable {
     private String nickName;
 
     /**
+     * 用户类型
+     * */
+    private String type;
+
+    /**
      * 租户id
      * */
+    @NotBlank(message = "租户id不能为空")
     private String tenantId;
 }

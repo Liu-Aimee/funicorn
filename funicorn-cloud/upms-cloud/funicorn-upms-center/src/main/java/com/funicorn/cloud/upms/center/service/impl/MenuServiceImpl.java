@@ -10,12 +10,16 @@ import com.funicorn.cloud.upms.api.model.MenuTree;
 import com.funicorn.cloud.upms.center.constant.LeveEnum;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
 import com.funicorn.cloud.upms.center.dto.MenuDTO;
+import com.funicorn.cloud.upms.center.entity.App;
 import com.funicorn.cloud.upms.center.entity.AppTenant;
 import com.funicorn.cloud.upms.center.entity.Menu;
 import com.funicorn.cloud.upms.center.entity.UserTenant;
+import com.funicorn.cloud.upms.center.exception.ErrorCode;
+import com.funicorn.cloud.upms.center.exception.UpmsException;
 import com.funicorn.cloud.upms.center.mapper.AppTenantMapper;
 import com.funicorn.cloud.upms.center.mapper.MenuMapper;
 import com.funicorn.cloud.upms.center.mapper.UserTenantMapper;
+import com.funicorn.cloud.upms.center.service.AppService;
 import com.funicorn.cloud.upms.center.service.MenuService;
 import com.funicorn.cloud.upms.center.service.UserRoleService;
 import com.funicorn.cloud.upms.center.util.TreeUtil;
@@ -45,6 +49,8 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     private UserTenantMapper userTenantMapper;
     @Resource
     private UserRoleService userRoleService;
+    @Resource
+    private AppService appService;
 
     @Override
     public List<MenuTree> getCurrentMenusByAppId(String appId) {
@@ -66,6 +72,15 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             menuTreeList.add(menuTree);
         });
         return TreeUtil.buildMenuTree(menuTreeList);
+    }
+
+    @Override
+    public List<MenuTree> getCurrentMenusByClientId(String clientId) {
+        App app = appService.getOne(Wrappers.<App>lambdaQuery().eq(App::getClientId,clientId).eq(App::getIsDelete,UpmsConstant.NOT_DELETED).last("limit 1"));
+        if (app==null) {
+            throw new UpmsException(ErrorCode.APP_NOT_EXISTS,clientId);
+        }
+        return getCurrentMenusByAppId(app.getId());
     }
 
     @Override

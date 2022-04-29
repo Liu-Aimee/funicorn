@@ -67,7 +67,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
 
         IPage<App> iPage = baseMapper.selectPage(new Page<>(appPageDTO.getCurrent(),appPageDTO.getSize()),
                 Wrappers.<App>lambdaQuery()
-                        .eq(App::getStatus,UpmsConstant.ENABLED)
                         .eq(App::getIsDelete,UpmsConstant.NOT_DELETED)
                         .in(App::getId,appTenants.stream().map(AppTenant::getAppId).collect(Collectors.toList())));
         if (iPage==null || iPage.getRecords()==null || iPage.getRecords().isEmpty()) {

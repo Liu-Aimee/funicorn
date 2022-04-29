@@ -113,16 +113,16 @@ public class App extends BaseModel implements Serializable{
   private String router;
 
   /**
+   * 应用的访问地址
+   */
+  @TableField(value = "url")
+  private String url;
+
+  /**
    * 描述
    */
   @TableField(value = "description")
   private String description;
-
-  /**
-   * 应用状态，0启用 1禁用
-   */
-  @TableField(value = "status")
-  private Integer status;
 
   /**
    * 应用级别，private:私有/public:公开 默认private

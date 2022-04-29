@@ -1,6 +1,7 @@
 package com.funicorn.cloud.upms.center.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.funicorn.cloud.upms.center.dto.UserRoleDTO;
 import com.funicorn.cloud.upms.center.entity.Role;
 import com.funicorn.cloud.upms.center.entity.UserRole;
 
@@ -32,8 +33,15 @@ public interface UserRoleService extends IService<UserRole> {
 
     /**
      * 查询用户的所有角色信息
+     * @param tenantId 租户id
      * @param userId 用户id
      * @return List
      * */
-    List<Role> getRolesByUserId(String userId);
+    List<Role> getRolesByUserId(String tenantId,String userId);
+
+    /**
+     * 角色关联用户
+     * @param userRoleDTO 入参
+     * */
+    void userBindRole(UserRoleDTO userRoleDTO);
 }

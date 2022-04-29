@@ -15,10 +15,14 @@ import com.funicorn.cloud.system.api.service.FunicornSystemService;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
 import com.funicorn.cloud.upms.center.dto.TenantDTO;
 import com.funicorn.cloud.upms.center.dto.UserTenantDTO;
+import com.funicorn.cloud.upms.center.entity.App;
+import com.funicorn.cloud.upms.center.entity.AppTenant;
 import com.funicorn.cloud.upms.center.entity.Tenant;
 import com.funicorn.cloud.upms.center.entity.UserTenant;
 import com.funicorn.cloud.upms.center.exception.ErrorCode;
 import com.funicorn.cloud.upms.center.exception.UpmsException;
+import com.funicorn.cloud.upms.center.service.AppService;
+import com.funicorn.cloud.upms.center.service.AppTenantService;
 import com.funicorn.cloud.upms.center.service.TenantService;
 import com.funicorn.cloud.upms.center.service.UserTenantService;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +54,10 @@ public class TenantController {
     private UserTenantService userTenantService;
     @Resource
     private FunicornSystemService funicornSystemService;
+    @Resource
+    private AppTenantService appTenantService;
+    @Resource
+    private AppService appService;
 
     /**
      * 查询当前用户可用租户
@@ -80,6 +88,24 @@ public class TenantController {
             tenants = tenantService.list(tenantQueryWrapper);
         }
         return Result.ok(tenants);
+    }
+
+    /**
+     * 查询租户已绑定的应用
+     * @param tenantId 租户id
+     * @return Result
+     */
+    @GetMapping("/bindAppList")
+    public Result<List<App>> bindList(@RequestParam String tenantId) {
+        List<AppTenant> appTenants = appTenantService.list(Wrappers.<AppTenant>lambdaQuery().eq(AppTenant::getTenantId,tenantId));
+        List<String> appIds = appTenants.stream().map(AppTenant::getAppId).collect(Collectors.toList());
+        if (appIds.isEmpty()) {
+            return Result.ok(new ArrayList<>());
+        }
+        LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(App::getId,appIds);
+        queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
+        return Result.ok(appService.list(queryWrapper));
     }
 
     /**
@@ -124,15 +150,18 @@ public class TenantController {
     /**
      * 上传用户头像
      * @param file 文件流
+     * @param bucketName 桶名
      * @return 头像访问路径
      * */
     @PostMapping(value = "/uploadLogo",consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<String> uploadLogo(@RequestParam(value = "file") MultipartFile file,@RequestParam(required = false) String tenantId){
+    public Result<String> uploadLogo(@RequestParam(value = "file") MultipartFile file,
+                                     @RequestParam String bucketName,
+                                     @RequestParam(required = false) String tenantId){
         List<String> suffixList = Arrays.asList("jpg","jpeg","png","JPG","JPEG","PNG");
         if (StringUtils.isBlank(file.getContentType()) || !suffixList.contains(file.getContentType().split("/")[1])) {
             throw new UpmsException(ErrorCode.NOT_SUPPORTED_PIC_SUFFIX,file.getContentType());
         }
-        Result<UploadFileData> result = funicornSystemService.upload(file,null,true);
+        Result<UploadFileData> result = funicornSystemService.upload(file,bucketName,true);
         if (result==null || !result.isSuccess() || result.getData()==null){
             return Result.error("头像上传失败");
         }

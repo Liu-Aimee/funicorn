@@ -65,6 +65,10 @@ public class CurrentUser implements UserDetails, Serializable {
      * */
     private String nickName;
     /**
+     * 用户头像
+     * */
+    private String headLogo;
+    /**
      * 用户头像id
      * */
     private String imgId;

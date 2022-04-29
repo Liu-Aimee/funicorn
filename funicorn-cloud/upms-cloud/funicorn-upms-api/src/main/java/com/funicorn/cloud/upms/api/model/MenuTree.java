@@ -56,6 +56,11 @@ public class MenuTree implements Serializable {
     private String status;
 
     /**
+     * 级别 public/private
+     */
+    private String level;
+
+    /**
      * 路径
      * */
     private String path;

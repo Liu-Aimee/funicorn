@@ -7,11 +7,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 /**
  * code换取令牌端点
@@ -28,20 +32,24 @@ public class CustomizeTokenEndpoint {
     /**
      * code换取令牌
      * @param code code
+     * @param redirectUri 回调地址
      * @return Result AccessToken
      * */
-    @RequestMapping(value = "/auth/exchangeToken", method= RequestMethod.GET)
-    public Result<Object> exchangeToken(@RequestParam String code) {
+    @PostMapping(value = "/auth/exchangeToken")
+    public Result<Object> exchangeToken(@RequestParam String code,@RequestParam String redirectUri) throws UnsupportedEncodingException {
         RestTemplate restTemplate = new RestTemplate();
         String url = funicornConfigProperties.getSecurity().getServerAddr() + funicornConfigProperties.getSecurity().getTokenApi() + "?";
         String clientId = funicornConfigProperties.getSecurity().getClientId();
-        String redirectUri = funicornConfigProperties.getSecurity().getRedirectUri();
         String grantType = funicornConfigProperties.getSecurity().getGrantType();
         String clientSecret = funicornConfigProperties.getSecurity().getClientSecret();
-        url = url + "code=" + code + "&client_id=" + clientId +"&redirect_uri="
-                + redirectUri + "&client_secret=" + clientSecret + "&grant_type=" +grantType;
-        HttpEntity<String> requestEntity = new HttpEntity<>(null, null);
-        log.debug("code exchange token url is : " + url);
+        // 表单形式提交，可以传递包含特殊符号的redirect_uri
+        MultiValueMap<String,Object> formData = new LinkedMultiValueMap<>();
+        formData.set("redirect_uri", URLDecoder.decode(redirectUri,"UTF-8"));
+        formData.set("code", code);
+        formData.set("client_id", clientId);
+        formData.set("client_secret", clientSecret);
+        formData.set("grant_type", grantType);
+        HttpEntity<MultiValueMap<String,Object>> requestEntity = new HttpEntity<>(formData, null);
         try {
             ResponseEntity<Object> res  = restTemplate.postForEntity(url, requestEntity, Object.class);
             return Result.ok(res.getBody());

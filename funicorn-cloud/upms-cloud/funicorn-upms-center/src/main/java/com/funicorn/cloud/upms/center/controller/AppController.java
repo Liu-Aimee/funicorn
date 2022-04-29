@@ -57,6 +57,18 @@ public class AppController {
     private PasswordEncoder passwordEncoder;
 
     /**
+     * 根据应用唯一标识获取应用信息
+     * */
+    @GetMapping("/getAppByClientId")
+    public Result<App> getAppByClientId(String clientId) {
+        App app = appService.getOne(Wrappers.<App>lambdaQuery().eq(App::getClientId,clientId).eq(App::getIsDelete, UpmsConstant.NOT_DELETED).last("limit 1"));
+        if (app==null) {
+            throw new UpmsException(ErrorCode.APP_NOT_EXISTS,clientId);
+        }
+        return Result.ok(app);
+    }
+
+    /**
      * 分页查询应用
      * @param appPageDTO 入参
      * @return Result
@@ -162,35 +174,11 @@ public class AppController {
             if (!realAppIds.isEmpty()) {
                 LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
                 queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
-                queryWrapper.eq(App::getStatus,UpmsConstant.ENABLED);
                 queryWrapper.in(App::getId,realAppIds);
                 apps = appService.list(queryWrapper);
             }
         }
         return Result.ok(apps);
-    }
-
-    /**
-     * 查询租户已绑定的应用
-     * @param tenantId 租户id 默认当前登陆人选择的租户
-     * @return Result
-     */
-    @GetMapping("/bindList")
-    public Result<List<App>> bindList(@RequestParam(required = false) String tenantId) {
-        LambdaQueryWrapper<App> queryWrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isBlank(tenantId)){
-            tenantId = SecurityUtil.getCurrentUser().getTenantId();
-        }
-
-        List<AppTenant> appTenants = appTenantService.list(Wrappers.<AppTenant>lambdaQuery().eq(AppTenant::getTenantId,tenantId));
-        List<String> appIds = appTenants.stream().map(AppTenant::getAppId).collect(Collectors.toList());
-        if (appIds.isEmpty()) {
-            return Result.ok(new ArrayList<>());
-        }
-
-        queryWrapper.in(App::getId,appIds);
-        queryWrapper.eq(App::getIsDelete,UpmsConstant.NOT_DELETED);
-        return Result.ok(appService.list(queryWrapper));
     }
 
     /**

@@ -2,8 +2,6 @@ package com.funicorn.cloud.upms.center.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.funicorn.basic.common.security.model.CurrentUser;
-import com.funicorn.basic.common.security.util.SecurityUtil;
 import com.funicorn.cloud.upms.center.dto.RoleMenuDTO;
 import com.funicorn.cloud.upms.center.entity.RoleApp;
 import com.funicorn.cloud.upms.center.entity.RoleMenu;
@@ -34,39 +32,42 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu> i
 
     @Override
     public void bind(RoleMenuDTO roleMenuDTO) {
-        CurrentUser loginUser = SecurityUtil.getCurrentUser();
-        //1、删除角色原有的菜单
-        baseMapper.delete(Wrappers.<RoleMenu>lambdaQuery().eq(RoleMenu::getRoleId,roleMenuDTO.getRoleId()).eq(RoleMenu::getTenantId,loginUser.getTenantId()));
-        //2、删除角色原有的应用
-        roleAppService.remove(Wrappers.<RoleApp>lambdaQuery()
-                .eq(RoleApp::getRoleId,roleMenuDTO.getRoleId())
-                .eq(RoleApp::getTenantId,loginUser.getTenantId()));
-        //新增
-        List<RoleApp> roleApps = new ArrayList<>();
-        List<RoleMenu> roleMenus = new ArrayList<>();
         roleMenuDTO.getAppMenus().forEach(appMenu -> {
+            //1、删除角色原有的菜单
+            baseMapper.delete(Wrappers.<RoleMenu>lambdaQuery()
+                    .eq(RoleMenu::getRoleId,roleMenuDTO.getRoleId()).eq(RoleMenu::getAppId,appMenu.getAppId()).eq(RoleMenu::getTenantId,roleMenuDTO.getTenantId()));
+
+            //2、删除角色原有的应用
+            roleAppService.remove(Wrappers.<RoleApp>lambdaQuery()
+                    .eq(RoleApp::getRoleId,roleMenuDTO.getRoleId())
+                    .eq(RoleApp::getTenantId,roleMenuDTO.getTenantId()));
+
+            //新增
+            List<RoleApp> roleApps = new ArrayList<>();
+            List<RoleMenu> roleMenus = new ArrayList<>();
             String appId = appMenu.getAppId();
             RoleApp roleApp = new RoleApp();
             roleApp.setAppId(appId);
             roleApp.setRoleId(roleMenuDTO.getRoleId());
-            roleApp.setTenantId(loginUser.getTenantId());
+            roleApp.setTenantId(roleMenuDTO.getTenantId());
             roleApps.add(roleApp);
             appMenu.getMenuIds().forEach(id->{
                 RoleMenu roleMenu = new RoleMenu();
                 roleMenu.setMenuId(id);
                 roleMenu.setRoleId(roleMenuDTO.getRoleId());
-                roleMenu.setTenantId(loginUser.getTenantId());
+                roleMenu.setTenantId(roleMenuDTO.getTenantId());
                 roleMenu.setAppId(appId);
                 roleMenus.add(roleMenu);
             });
+            //3、角色绑定应用
+            if (!roleApps.isEmpty()){
+                roleAppService.saveBatch(roleApps);
+            }
+            //4、角色绑定菜单
+            if (!roleMenus.isEmpty()){
+                super.saveBatch(roleMenus);
+            }
+
         });
-        //3、角色绑定应用
-        if (!roleApps.isEmpty()){
-            roleAppService.saveBatch(roleApps);
-        }
-        //4、角色绑定菜单
-        if (!roleMenus.isEmpty()){
-            super.saveBatch(roleMenus);
-        }
     }
 }

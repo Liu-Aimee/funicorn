@@ -2,6 +2,7 @@ package com.funicorn.cloud.upms.center.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.funicorn.basic.common.base.model.Result;
 import com.funicorn.basic.common.base.util.DateUtil;
 import com.funicorn.basic.common.base.valid.Insert;
@@ -13,13 +14,17 @@ import com.funicorn.cloud.system.api.model.UploadFileData;
 import com.funicorn.cloud.system.api.service.FunicornSystemService;
 import com.funicorn.cloud.upms.api.model.UserInfo;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
+import com.funicorn.cloud.upms.center.dto.ResetPwdDTO;
 import com.funicorn.cloud.upms.center.dto.UserDTO;
 import com.funicorn.cloud.upms.center.dto.UserPageDTO;
 import com.funicorn.cloud.upms.center.dto.UserPwdDTO;
 import com.funicorn.cloud.upms.center.entity.User;
+import com.funicorn.cloud.upms.center.entity.UserRole;
 import com.funicorn.cloud.upms.center.exception.ErrorCode;
 import com.funicorn.cloud.upms.center.exception.UpmsException;
+import com.funicorn.cloud.upms.center.service.UserRoleService;
 import com.funicorn.cloud.upms.center.service.UserService;
+import com.funicorn.cloud.upms.center.util.RandomUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -32,6 +37,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 用户信息管理 接口
@@ -45,6 +51,8 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private UserRoleService userRoleService;
     @Resource
     private FunicornSystemService funicornSystemService;
 
@@ -70,6 +78,17 @@ public class UserController {
     }
 
     /**
+     * 根据角色查询已绑定的用户id
+     * @param roleId 角色id
+     * @return Result
+     * */
+    @GetMapping("/getUserIdsByRoleId")
+    public Result<List<String>> getUserIdsByRoleId(@RequestParam String roleId) {
+        List<UserRole> userRoles = userRoleService.list(Wrappers.<UserRole>lambdaQuery().eq(UserRole::getRoleId,roleId));
+        return Result.ok(userRoles.stream().map(UserRole::getUserId).collect(Collectors.toList()));
+    }
+
+    /**
      * 新建用户
      * @param userDTO 入参
      * @return Result
@@ -90,6 +109,30 @@ public class UserController {
         userService.validate(userDTO);
         userService.updateUser(userDTO);
         return Result.ok();
+    }
+
+    /**
+     * 重置密码
+     * @param resetPwdDTO 入参
+     * @return Result
+     * */
+    @PostMapping("/resetPwd")
+    public Result<String> resetPwd(@RequestBody ResetPwdDTO resetPwdDTO) {
+        User currentUser = userService.getById(SecurityUtil.getCurrentUser().getId());
+        if (!BCrypt.checkpw(resetPwdDTO.getPassword(),currentUser.getPassword())) {
+            throw new UpmsException(ErrorCode.OLD_PASSWORD_IS_FALSE);
+        }
+        User user = userService.getById(resetPwdDTO.getUserId());
+        if (user==null) {
+            throw new UpmsException(ErrorCode.USER_NOT_EXISTS);
+        }
+        String password = RandomUtil.getRandomStr(8);
+        User realUser = new User();
+        realUser.setId(resetPwdDTO.getUserId());
+        realUser.setPassword(BCrypt.hashpw(password,BCrypt.gensalt()));
+        realUser.setExpireTime(DateUtil.addMonth(new Date(),3).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        userService.updateById(realUser);
+        return Result.ok(password,"重置成功");
     }
 
     /**

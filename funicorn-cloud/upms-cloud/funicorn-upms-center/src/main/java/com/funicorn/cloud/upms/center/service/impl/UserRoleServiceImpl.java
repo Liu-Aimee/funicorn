@@ -4,8 +4,14 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.funicorn.cloud.upms.center.constant.LeveEnum;
 import com.funicorn.cloud.upms.center.constant.UpmsConstant;
+import com.funicorn.cloud.upms.center.dto.UserRoleDTO;
 import com.funicorn.cloud.upms.center.entity.*;
-import com.funicorn.cloud.upms.center.mapper.*;
+import com.funicorn.cloud.upms.center.exception.ErrorCode;
+import com.funicorn.cloud.upms.center.exception.UpmsException;
+import com.funicorn.cloud.upms.center.mapper.AppTenantMapper;
+import com.funicorn.cloud.upms.center.mapper.MenuMapper;
+import com.funicorn.cloud.upms.center.mapper.RoleMapper;
+import com.funicorn.cloud.upms.center.mapper.UserRoleMapper;
 import com.funicorn.cloud.upms.center.service.RoleAppService;
 import com.funicorn.cloud.upms.center.service.RoleMenuService;
 import com.funicorn.cloud.upms.center.service.UserRoleService;
@@ -200,7 +206,29 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
     }
 
     @Override
-    public List<Role> getRolesByUserId(String userId) {
-        return baseMapper.selectRolesByUserId(userId);
+    public List<Role> getRolesByUserId(String tenantId,String userId) {
+        return baseMapper.selectRolesByUserId(tenantId,userId);
+    }
+
+    @Override
+    public void userBindRole(UserRoleDTO userRoleDTO) {
+        Role role = roleMapper.selectById(userRoleDTO.getRoleId());
+        if (role==null || UpmsConstant.IS_DELETED.equals(role.getIsDelete())) {
+            throw new UpmsException(ErrorCode.ROLE_NOT_EXISTS);
+        }
+        //先删除
+        remove(Wrappers.<UserRole>lambdaQuery().eq(UserRole::getRoleId,role.getId()).in(UserRole::getUserId,userRoleDTO.getUserIds()));
+        //再新增
+        List<UserRole> userRoles = new ArrayList<>();
+        userRoleDTO.getUserIds().forEach(userId->{
+            UserRole userRole = new UserRole();
+            userRole.setRoleId(role.getId());
+            userRole.setUserId(userId);
+            userRole.setTenantId(role.getTenantId());
+            userRoles.add(userRole);
+        });
+        if (!userRoles.isEmpty()) {
+            saveBatch(userRoles);
+        }
     }
 }

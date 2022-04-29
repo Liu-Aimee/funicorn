@@ -8,6 +8,7 @@
         SELECT role.*
           FROM role INNER JOIN user_role ON role.id = user_role.role_id
          where role.is_delete = '0'
+           and role.tenant_id = #{tenantId}
            and user_role.user_id = #{userId}
     </select>
 </mapper>

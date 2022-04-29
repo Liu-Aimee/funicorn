@@ -167,6 +167,11 @@ public enum ErrorCode {
      * 不支持的图片格式
      * */
     NOT_SUPPORTED_PIC_SUFFIX(-131,"不支持的图片格式[%s]"),
+
+    /**
+     * 角色不存在
+     * */
+    ROLE_NOT_EXISTS(-132,"角色不存在"),
     ;
 
     private final int status;
