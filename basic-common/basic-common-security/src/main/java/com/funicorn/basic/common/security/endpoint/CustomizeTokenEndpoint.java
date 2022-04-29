@@ -35,7 +35,7 @@ public class CustomizeTokenEndpoint {
      * @param redirectUri 回调地址
      * @return Result AccessToken
      * */
-    @PostMapping(value = "/auth/exchangeToken")
+    @GetMapping(value = "/auth/exchangeToken")
     public Result<Object> exchangeToken(@RequestParam String code,@RequestParam String redirectUri) throws UnsupportedEncodingException {
         RestTemplate restTemplate = new RestTemplate();
         String url = funicornConfigProperties.getSecurity().getServerAddr() + funicornConfigProperties.getSecurity().getTokenApi() + "?";
