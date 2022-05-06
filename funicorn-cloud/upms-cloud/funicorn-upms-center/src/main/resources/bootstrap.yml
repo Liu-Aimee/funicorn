@@ -5,7 +5,7 @@ spring:
     nacos:
       discovery:
         # 106.13.217.154
-        server-addr: ${NACOS_HOST:192.168.140.140}:${NACOS_PORT:8848}
+        server-addr: ${NACOS_HOST:106.13.217.154}:${NACOS_PORT:8848}
         username: nacos
         password: nacos
         namespace: FUnicorn

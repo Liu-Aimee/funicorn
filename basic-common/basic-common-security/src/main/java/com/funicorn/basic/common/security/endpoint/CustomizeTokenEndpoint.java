@@ -34,6 +34,7 @@ public class CustomizeTokenEndpoint {
      * @param code code
      * @param redirectUri 回调地址
      * @return Result AccessToken
+     * @throws UnsupportedEncodingException 异常
      * */
     @GetMapping(value = "/auth/exchangeToken")
     public Result<Object> exchangeToken(@RequestParam String code,@RequestParam String redirectUri) throws UnsupportedEncodingException {

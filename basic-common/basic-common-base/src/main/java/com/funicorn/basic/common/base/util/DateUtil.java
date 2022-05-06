@@ -594,6 +594,7 @@ public class DateUtil {
 
 	/**
 	 * 单元测试
+	 * @param args 参数
 	 * */
 	public static void main(String[] args) {
 		List<DateModel> dateModels = DateUtil.getDifferMonthList(Objects.requireNonNull(strToDate("2022/01/21 00:00:00", YYYY_MM_DD_HH_MM_SS))
